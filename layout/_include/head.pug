@@ -13,3 +13,6 @@ head
 
   if (theme.favicon)
     link(rel="shortcut icon", type="image/x-icon", href=theme.favicon)
+  link(rel='icon', href=url_for(theme.favicon))
+  link(rel="stylesheet", href="https://unpkg.com/sanitize.css")
+  link(rel='stylesheet', href=url_for('css/theme.css'))
