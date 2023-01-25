@@ -2,9 +2,9 @@ extends _include/layout
 
 block title
   title= config.title
-
 block content
-  main#google_translate_element
+  div#google_translate_element
+  main
     for post in page.posts.toArray()
         article
           a(href=url_for(post.path)): h2= post.title
