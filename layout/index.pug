@@ -4,14 +4,18 @@ block title
   title= config.title
 block content
   div#google_translate_element
-  main
+  main.index
     for post in page.posts.toArray()
-        article
-          a(href=url_for(post.path)): h2= post.title
+        article.post
+          a(href=url_for(post.path))
+           hgroup.title-date
+            h2.title= post.title 
+            time.date= post.date.format(config.date_format)
           if post.tags
-            ul
+            ul.tags
               for tag in post.tags.toArray()
-                li: a(href=url_for(tag.path))= tag.name
+                li.tag-name
+                  a(href=url_for(tag.path))= tag.name
 
   hr
 
