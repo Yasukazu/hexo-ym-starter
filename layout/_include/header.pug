@@ -1,5 +1,7 @@
 header
-  a(href=url_for("/"))
+  hgroup.title-subtitle
     h1= config.title
-    if theme.subtitle
-      p= theme.subtitle
+    p= theme.subtitle
+  ul.header
+    li.home: a(href=url_for("/")) Home
+    li.about: a(href=url_for("/about/")) About
