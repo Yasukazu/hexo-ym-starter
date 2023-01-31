@@ -13,6 +13,7 @@ block content
             time.date= post.date.format(config.date_format)
           if post.tags
             ul.tags
+              | Tags:
               for tag in post.tags.toArray()
                 li.tag-name
                   a(href=url_for(tag.path))= tag.name
