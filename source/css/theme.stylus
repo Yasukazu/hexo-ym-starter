@@ -60,7 +60,19 @@ div
         & > label
             &::after
                 content ": "
+        &.submit
+            flex-direction: row-reverse;
 
 button
+    border-radius: 0.4em;
     &.submit
         margin-top 1em
+        width: fit-content;
+
+code 
+    color: yellow;
+    background-color: #000;
+    &::before
+        border-bottom: thin solid #000;
+    &::after
+        border-top: thin solid #000;
