@@ -46,30 +46,31 @@ article
         & > header
             background-color #fff
 
-form
-    &.send-message
-        display flex
-        flex-direction column
+fieldset.form
+    background-color: #aaa;
+    > legend
+        background-color: #fff;
 
-div
-    &.form-part
+form.send-message
+    display flex
+    flex-direction column
+    div.form-part
         display flex
         flex-direction row
         &.col
-            flex-direction column
-        & > label
+         flex-direction column
+        > label
             &::after
                 content ": "
-        &.submit
-            flex-direction: row-reverse;
-
-button
-    border-radius: 0.4em;
-    &.submit
-        margin-top 1em
-        width: fit-content;
+    div.submit
+        flex-direction: row-reverse;
+        > button.submit
+            border-radius: 0.4em;
+            margin-top 1em
+            width: fit-content;
 
 code 
+    font-family: monospace;
     color: yellow;
     background-color: #000;
     &::before
