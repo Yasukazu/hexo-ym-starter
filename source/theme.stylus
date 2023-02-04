@@ -1,18 +1,16 @@
+:root
+    --main-color: #000
+
 header
-    background-color #1aa
+    background-color #0aa
     padding 0.5em
-    & > ul
-        &.header
-            & > li
-                display inline
-                list-style-type none
 
 main
     padding 0.5em
     &.index
         article
             &.post
-                border thin solid #000
+                border thin solid var(--main-color)
                 margin-bottom 1em
                 padding 0.5em
 
@@ -36,8 +34,7 @@ hgroup
             &::before
                 content "-- "
 
-li
-    &.tag-name
+ul.header
         display inline
         list-style-type none
 

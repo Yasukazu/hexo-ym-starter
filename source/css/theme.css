@@ -1,0 +1,85 @@
+:root {
+    --main-color: #000;
+    --main-bg-color: #fff;
+    --sub-bg-color: #aaa;
+
+  }
+  header {
+    background-color: var(--sub-bg-color);
+    padding: 0.5em;
+  }
+  main {
+    padding: 0.5em;
+  }
+  main.index article.post {
+    border: thin solid var(--main-color);
+    margin-bottom: 1em;
+    padding: 0.5em;
+  }
+  footer {
+    background-color: #ff441a;
+    padding: 0.5em;
+  }
+  hgroup.title-date > h2.title {
+    display: inline;
+  }
+  hgroup.title-date > time.date {
+    font-size: 1em;
+    margin-left: 1em;
+  }
+  hgroup.title-subtitle > * {
+    display: inline;
+  }
+  hgroup.title-subtitle > p::before {
+    content: "-- ";
+  }
+  ul.header {
+    list-style-type: none;
+  }
+  ul.header > li {
+    display: inline;
+    margin-right: 1em;
+  }
+  article.post > header {
+    background-color: #fff;
+  }
+  fieldset.form {
+    background-color: #aaa;
+  }
+  fieldset.form > legend {
+    background-color: #fff;
+  }
+  form.send-message {
+    display: flex;
+    flex-direction: column;
+  }
+  form.send-message div.form-part {
+    display: flex;
+    flex-direction: row;
+  }
+  form.send-message div.form-part.col {
+    flex-direction: column;
+  }
+  form.send-message div.form-part > label::after {
+    content: ": ";
+  }
+  form.send-message div.submit {
+    flex-direction: row-reverse;
+  }
+  form.send-message div.submit > button.submit {
+    border-radius: 0.4em;
+    margin-top: 1em;
+    width: fit-content;
+  }
+  code {
+    font-family: monospace;
+    color: #ff0;
+    background-color: #000;
+  }
+  code::before {
+    border-bottom: thin solid #000;
+  }
+  code::after {
+    border-top: thin solid #000;
+  }
+  
