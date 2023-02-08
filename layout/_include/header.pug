@@ -1,8 +1,8 @@
 header
-  hgroup.title-subtitle
+  hgroup.title.subtitle
     h1= config.title
     p= theme.subtitle
   ul.header
     li.home: a(href=url_for("/")) Home
-    li.archives: a(href=url_for("/archives/")) Archives
+    li.archives: a(href=url_for("/archives/")) Archives(Categories, Tags)
     li.about: a(href=url_for("/about/")) About

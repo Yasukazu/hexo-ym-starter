@@ -5,8 +5,8 @@ block title
   title= `${page.title} | ${config.title}`
 
 block content
-  main
-    article
+  main#page
+    article.page
       header
         h1= page.title
         span= page.date.format(config.date_format)

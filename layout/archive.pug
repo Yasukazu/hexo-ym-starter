@@ -4,7 +4,7 @@ block title
   title Archive | #{config.title}
 
 block content
-  main
+  main#archive
     header
       h1 Archive
 
@@ -12,10 +12,27 @@ block content
 
     div
       for post in page.posts.toArray()
-        article
+        article.archive
           a(href=url_for(post.path)): h2= post.title
 
     hr
+    // show all categories and tags
+    if !(page.category || page.tag)
+        h2 Categories
+        .all-categories
+          ul.tag-box.list-unstyled
+            for category in site.categories.sort('name').toArray()
+              li
+                a(href=url_for(category.path))= category.name
+                  span= category.posts.length
+        h2 Tags
+        .all-tags
+          ul.tag-box.list-unstyled
+            for tag in site.tags.sort('name').toArray()
+              li
+                a(href=url_for(tag.path))= tag.name
+                  span= tag.posts.length
+
 
 block pagination
   include _include/paginator
