@@ -1,7 +1,7 @@
 :root {
   --main-color: #000;
   --main-bg-color: #fff;
-  --sub-bg-color: #aaa;
+  --sub-bg-color: #ddd;
 }
 
 header {
@@ -51,6 +51,20 @@ ul.header {
   -webkit-box-pack: space-evenly;
       -ms-flex-pack: space-evenly;
           justify-content: space-evenly;
+}
+
+ul.tags {
+  display: inline;
+  margin-left: 1em;
+  list-style-type: none;
+}
+ul.tags > li {
+  display: inline;
+  margin-left: 1em;
+}
+
+span.length {
+  margin-left: 1em;
 }
 
 article.post > header {

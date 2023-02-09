@@ -1,38 +1,45 @@
 extends _include/layout
 
 block title
-  title Archive | #{config.title}
+  title Archive(Posts / Categories / Tags)
 
 block content
   main#archive
     header
-      h1 Archive
+      h1
+        | Archive:
+        a(href="#all-posts") Posts
+        | / 
+        a(href="#all-categories") Categories
+        | / 
+        a(href="#all-tags") Tags
 
-    hr
-
-    div
+    section#all-posts
+      h2 Posts
       for post in page.posts.toArray()
-        article.archive
-          a(href=url_for(post.path)): h2= post.title
+        article.post
+          a(href=url_for(post.path))
+            h3= post.title
 
     hr
-    // show all categories and tags
-    if !(page.category || page.tag)
+ 
+    if site.categories
+      section#all-categories
         h2 Categories
-        .all-categories
           ul.tag-box.list-unstyled
             for category in site.categories.sort('name').toArray()
-              li
+              li.category
                 a(href=url_for(category.path))= category.name
-                  span= category.posts.length
+                  span.length= category.posts.length
+
+    if site.tags
+      section#all-tags
         h2 Tags
-        .all-tags
           ul.tag-box.list-unstyled
             for tag in site.tags.sort('name').toArray()
-              li
+              li.tag
                 a(href=url_for(tag.path))= tag.name
-                  span= tag.posts.length
-
+                  span.length= tag.posts.length
 
 block pagination
   include _include/paginator

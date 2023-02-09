@@ -1,18 +1,11 @@
-
 extends _include/layout
 
 block title
   title= `${page.title} | ${config.title}`
 
 block content
-  main#page
-    article.page
-      header
-        h1= page.title
-        span= page.date.format(config.date_format)
-
-      hr
-
-      div!= page.content
-
-      hr
+  header.page
+    h1= page.title
+    span= page.date.format(config.date_format)
+  br
+  main.page!= page.content

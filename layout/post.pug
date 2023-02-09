@@ -1,20 +1,43 @@
 extends _include/layout
-
+  
 block title
-  title= `${page.title} | ${config.title}`
-
+    title= `${page.title} | ${config.title}`
+  
 block content
-  main#post
-    article.post
-      header
-        h1.title= page.title
-        time.date= page.date.format(config.date_format)
-
-      hr
-
-      div.content!= page.content
-
-      hr
-
+      article#post
+        header.post
+          h1.title= page.title
+          time.date= page.date.format(config.date_format)
+  
+        br
+  
+        main.post!= page.content
+  
+        hr
+        if page.tags
+          section#tags
+            h2 Tags
+              ul.tag-box.list-unstyled
+                - count = 0;
+                for tag in page.tags.sort('name').toArray()
+                  if tag.posts.length > 1
+                    li.tag
+                      a(href=url_for(tag.path))= tag.name
+                    - count++;
+                if !count
+                  p= "No other same tag post."
+        if page.categories
+          section#all-categories
+            h2 Categories
+              ul.tag-box.list-unstyled
+                - count = 0;
+                for category in page.categories.sort('name').toArray()
+                  if category.posts.length > 1
+                    li.category
+                      a(href=url_for(category.path))= category.name
+                    - count++;
+                if !count
+                  p= "No other same category post."
+  
 block pagination
-  include _include/paginator
+    include _include/paginator

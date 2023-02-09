@@ -9,7 +9,7 @@ $background-color_5: #000;
 :root {
 	--main-color: #000;
 	--main-bg-color: #fff;
-	--sub-bg-color: #aaa;
+	--sub-bg-color: #ddd;
 }
 header {
 	background-color: $sub-bg-color;
@@ -53,6 +53,18 @@ ul.header {
 	flex-direction: row;
 	list-style-type: none;
 	justify-content: space-evenly;
+}
+ul.tags {
+	display: inline;
+	margin-left: 1em;
+	list-style-type: none;
+	>li {
+		display: inline;
+		margin-left: 1em;
+	}
+}
+span.length {
+	margin-left: 1em;
 }
 article.post {
 	>header {
