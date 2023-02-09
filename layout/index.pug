@@ -13,12 +13,18 @@ block content
             else
               h2 (no title)
           time.date= post.date.format(config.date_format)
-          if post.tags
-            ul.tags
-              | Tags:
-              for tag in post.tags.toArray()
-                li.tag-name
-                  a(href=url_for(tag.path))= tag.name
+          if post.categories.length > 0
+            section.category
+              if post.categories.length == 1
+                h3.cat-1 Category:
+                - category = post.categories.toArray()[0]
+                  a(href=url_for(category.path))= category.name
+              else
+                h3.cat-2 Categories:
+                ul.categories
+                  for category in post.categories.toArray()
+                    li.category-name
+                      a(href=url_for(category.path))= category.name
         hr
 
   hr
