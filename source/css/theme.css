@@ -4,7 +4,7 @@
   --sub-bg-color: #ddd;
 }
 
-header {
+header.included {
   background-color: var(--sub-bg-color);
   padding: 0.5em;
 }

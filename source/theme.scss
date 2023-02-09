@@ -11,7 +11,7 @@ $background-color_5: #000;
 	--main-bg-color: #fff;
 	--sub-bg-color: #ddd;
 }
-header {
+header.included {
 	background-color: $sub-bg-color;
 	padding: 0.5em;
 }
