@@ -1,5 +1,5 @@
 'use strict';
-
+debugger;
 var searchFunc = function(path, search_id, content_id) {
   $.ajax({
     url: path,
