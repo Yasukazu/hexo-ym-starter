@@ -3,8 +3,8 @@ extends _include/layout
 block title
   title= config.title
 block content
-  div#google_translate_element
   main#index
+    div#google_translate_element
     for post in page.posts.toArray()
         article.post
           a(href=url_for(post.path))
