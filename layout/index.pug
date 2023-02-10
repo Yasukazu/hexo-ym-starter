@@ -4,7 +4,6 @@ block title
   title= config.title
 block content
   main#index
-    div#google_translate_element
     for post in page.posts.toArray()
         article.post
           a(href=url_for(post.path))
@@ -12,7 +11,9 @@ block content
               h2.title= post.title 
             else
               h2 (no title)
-          time.date= post.date.format(config.date_format)
+          if post.excerpt
+            p.excerpt!= post.excerpt
+          time.post.date= post.date.format(config.date_format)
           if post.categories.length > 0
             section.category
               if post.categories.length == 1

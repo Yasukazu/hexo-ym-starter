@@ -25,7 +25,7 @@ block content
                       a(href=url_for(tag.path))= tag.name
                     - count++;
                 if !count
-                  p= "No other same tag post."
+                  p= "No other common-tag post."
         if page.categories
           section#all-categories
             h2 Categories
@@ -37,7 +37,7 @@ block content
                       a(href=url_for(category.path))= category.name
                     - count++;
                 if !count
-                  p= "No other same category post."
+                  p= "No other common-category post."
   
 block pagination
     include _include/paginator

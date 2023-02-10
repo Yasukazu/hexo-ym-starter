@@ -6,15 +6,3 @@ header.included
     li.home: a(href=url_for("/")) Home
     li.archives: a(href=url_for("/archives/")) Posts
     li.about: a(href=url_for("/about/")) About
-  script(async src="https://cse.google.com/cse.js?cx=02f71a344ff884d52")
-  h3.search In-site search&darr;
-  input(type="text" id="local-search-input" name="q" results="0" placeholder="キーワードを入力してください" class="form-control input--large" autofocus="autofocus")
-  hr
-  div.local-search-result
-  script.
-    var search_path = "search.xml";
-    if (search_path.length == 0) {
-      search_path = "search.xml";
-    }
-    var path = "/" + search_path;
-    searchFunc(path, 'local-search-input', 'local-search-result');
