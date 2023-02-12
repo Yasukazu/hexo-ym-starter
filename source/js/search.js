@@ -61,7 +61,8 @@ if (!form) {
 
 const search_text_tag = "input#search-text";
 function search() {
-  if (!document.querySelector(template_search_result_str)) {
+  const searchResult = document.querySelector(template_search_result_str);
+  if (!searchResult) {
     console.error(template_search_result_str + " is not found!");
     return false;
   }
@@ -74,14 +75,15 @@ function search() {
     console.error("search text length is 0!");
     return false;
   }
-  const queryWord = seach_text.value;
+  const queryWord = search_text.value;
   const fetch_path = '/search.xml';
-  searchResult.textContent = `FetchData from ${fetch_path} with ${search_word}`;
+  searchResult.textContent = `FetchData from ${fetch_path} with ${queryWord}`;
   fetchData('/search.xml').then(document => {
     const entries = analyzeData(document, queryWord); 
     if (entries.length <= 0) {
       console.log("entries.length is zero.");
     }
+    debugger;
     searchResult.innerHTML = makeSearchResult(entries)
   })
   return true;
