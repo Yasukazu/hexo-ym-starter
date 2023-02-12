@@ -33,8 +33,10 @@ function makeSearchResult (entries) {
   for (let entry of entries) {
     innerHTML += '<div class="search-result-entry">'
     const title = entry.children[0].textContent
-    const url = entry.children[3].textContent
+    // const link = entry.children[1].textContent
+    const url = entry.children[2].textContent
     const content = entry.children[3].textContent
+    // const tags = entry.children[4].textContent
     innerHTML += '<h2><a href="' + url + '">' + title + '</a></h2>'
     const thumbnail = /<img[^>]*>/.exec(content)
     if (thumbnail && thumbnail.length >= 1) {
@@ -46,24 +48,28 @@ function makeSearchResult (entries) {
   return innerHTML
 }
 
-function getSearchQueryFromUrlParams () {
-  const params = window.location.search.substring(1).split('&');
-  const search = params.filter(param => param.search(/$search=/));
-  return search.length > 0 ? search[0].split('=')[1] : null;
-}
-
-const template_search_result_str = "template#search-result";
-let searchResultStr = "search-result";
-let form = document.querySelector("form#search");
+const searchResultStr = "search-result";
+const div_search_result_str = `div#${searchResultStr}`;
+const form = document.querySelector("form#search");
 if (!form) {
   console.log("'form#search' is not found.");
 }
 
+const fetch_path = '/search.xml';
+const fetch_data = fetchData(fetch_path);
+if (!fetch_data) {
+  console.error("fetch_data promise is null!");
+}
+
 const search_text_tag = "input#search-text";
 function search() {
-  const searchResult = document.querySelector(template_search_result_str);
+  if (!fetch_data) {
+    console.error("'Cause fetch_data is null, exiting search()..");
+    return false;
+  }
+  const searchResult = document.querySelector(div_search_result_str);
   if (!searchResult) {
-    console.error(template_search_result_str + " is not found!");
+    console.error(div_search_result_str + " is not found!");
     return false;
   }
   const search_text = document.querySelector(search_text_tag);
@@ -71,52 +77,19 @@ function search() {
     console.error(search_text_tag + " is not found.");
     return false;
   }
-  if (search_text.value.length <= 0) {
-    console.error("search text length is 0!");
+  const queryWord = search_text.value;
+  if (!queryWord || queryWord.length <= 0) {
+    console.error("No search_text.value or search_text.length <= 0 !");
     return false;
   }
-  const queryWord = search_text.value;
-  const fetch_path = '/search.xml';
-  searchResult.textContent = `FetchData from ${fetch_path} with ${queryWord}`;
-  fetchData('/search.xml').then(document => {
+  let search_result = `FetchData from ${fetch_path} with ${queryWord}`;
+  fetch_data.then(document => {
     const entries = analyzeData(document, queryWord); 
     if (entries.length <= 0) {
       console.log("entries.length is zero.");
     }
-    debugger;
-    searchResult.innerHTML = makeSearchResult(entries)
+    search_result = makeSearchResult(entries)
+    searchResult.innerHTML = search_result;
   })
   return true;
 }
-
-// Replace serchResultStr to 'plugin-search-result' if '#search-result' not found.
-function init_search() {
-  let searchResult = document.querySelector(`#${searchResultStr}`);
-  if (!searchResult) {
-    const url_prefix = "plugin-";
-    console.log(`#${searchResultStr} is not found.`);
-    searchResultStr = url_prefix + searchResultStr;
-    console.log(`Fell back to #${searchResultStr}.`);
-    searchResult = document.querySelector(`#${searchResultStr}`);
-    if (!searchResult) {
-      console.error(searchResultStr + " is not found!");
-      return false;
-    }
-    searchResult.textContent = 'Loading...'
-    fetchData('/search.xml').then(document => {
-      const queryWord = getSearchQueryFromUrlParams();
-      if (queryWord == null) {
-        console.log("Query word is null.");
-        return;
-      }
-      console.log(`Query word is ${queryWord}.`);
-      const entries = analyzeData(document, queryWord); 
-      searchResult.innerHTML = makeSearchResult(entries)
-    })
-    return true;
-  }
-  return true;
-}
-
-if (!init_search())
-  console.error("init_search() call failed!");
