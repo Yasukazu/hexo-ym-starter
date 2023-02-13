@@ -50,6 +50,8 @@ function makeSearchResult (entries) {
 
 const searchResultStr = "search-result";
 const div_search_result_str = `div#${searchResultStr}`;
+const searchResult = document.querySelector(div_search_result_str);
+
 const form = document.querySelector("form#search");
 if (!form) {
   console.log("'form#search' is not found.");
@@ -67,7 +69,6 @@ function search() {
     console.error("'Cause fetch_data is null, exiting search()..");
     return false;
   }
-  const searchResult = document.querySelector(div_search_result_str);
   if (!searchResult) {
     console.error(div_search_result_str + " is not found!");
     return false;
@@ -90,6 +91,7 @@ function search() {
     }
     search_result = makeSearchResult(entries)
     searchResult.innerHTML = search_result;
+    // Event.preventDefault();
   })
   return true;
 }
