@@ -1,3 +1,4 @@
+//@ts-check
 function fetchData (fetchUrl) {
   return new Promise(resolve => {
     const xhr = new XMLHttpRequest()
@@ -48,25 +49,27 @@ function makeSearchResult (entries) {
   return innerHTML
 }
 
+/**
+ * 
+ * @param {Array<Node>} entries 
+ * @returns {Node}
+ */
 function makeSearchResultFromTemplates (entries) {
   let template_str = "template#search-result-container";
   let template = document.querySelector(template_str);
   if (!template) {
-    console.error(`${template_str} is not found!`);
-    return false;
+    throw `${template_str} is not found!`;
   }
   const search_result_container = document.importNode(template.content, true);
   const search_result_entries = search_result_container.querySelector('.entries');
   if (!search_result_entries) {
-    console.error(`.entries is not found!`);
-    return false;
+    throw `.entries is not found!`;
   }
 
   template_str = "template#search-result-entry";
   template = document.querySelector(template_str);
   if (!template) {
-    console.error(`${template_str} is not found!`);
-    return false;
+    throw `${template_str} is not found!`;
   }
   for (let entry of entries) {
     const search_result_entry = document.importNode(template.content, true);
@@ -102,25 +105,26 @@ if (!search_text) {
   console.error(search_text_tag + " is not found.");
 }
 
+/**
+ * 
+ * @returns {boolean}
+ */
 function search() {
   if (!fetch_data) {
-    console.error("'Cause fetch_data is null, exiting search()..");
-    return false;
+    throw "'Cause fetch_data is null, exiting search()..";
   }
   if (!searchResult) {
-    console.error(div_search_result_str + " is not found!");
-    return false;
+    throw search_result_str + " is not found!";
   }
   if (!search_text) {
-    console.error(search_text_tag + " is not found.");
-    return false;
+    throw search_text_tag + " is not found.";
   }
-  const queryWord = search_text.value;
+  const queryWord = search_text.textContent;
   if (!queryWord || queryWord.length <= 0) {
-    console.error("No search_text.value or search_text.length <= 0 !");
+    console.log("No search_text.value or search_text.length <= 0 !");
     return false;
   }
-  let search_result = `FetchData from ${fetch_path} with ${queryWord}`;
+  // let search_result = `FetchData from ${fetch_path} with ${queryWord}`;
   fetch_data.then(document => {
     const entries = analyzeData(document, queryWord); 
     if (entries.length <= 0) {
@@ -129,7 +133,7 @@ function search() {
     while (searchResult.firstChild) {
       searchResult.removeChild(searchResult.firstChild);
     }
-    search_result = makeSearchResultFromTemplates(entries)
+    const search_result = makeSearchResultFromTemplates(entries)
     if (search_result) {
       searchResult.appendChild(search_result);
     }
