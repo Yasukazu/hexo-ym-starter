@@ -119,7 +119,7 @@ function search() {
   if (!search_text) {
     throw search_text_tag + " is not found.";
   }
-  const queryWord = search_text.textContent;
+  const queryWord = search_text.value;
   if (!queryWord || queryWord.length <= 0) {
     console.log("No search_text.value or search_text.length <= 0 !");
     return false;
