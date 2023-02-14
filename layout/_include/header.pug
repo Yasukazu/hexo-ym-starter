@@ -11,6 +11,17 @@ header.included
     input#search-text(type="text" name="search-text")
     input.submit(type="submit" onclick="search()")
   div#search-result
+
+template#search-result-container
+  .search-result-container
+    h2 Search result
+    ul.entries
+
+template#search-result-entry
+  li.search-result-entry
+    a.title
+    p.content
+
 //- /search/?search=
 //  form.search
 //    input(type="text" id="search-text")

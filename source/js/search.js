@@ -48,13 +48,46 @@ function makeSearchResult (entries) {
   return innerHTML
 }
 
-const searchResultStr = "search-result";
-const div_search_result_str = `div#${searchResultStr}`;
-const searchResult = document.querySelector(div_search_result_str);
+function makeSearchResultFromTemplates (entries) {
+  let template_str = "template#search-result-container";
+  let template = document.querySelector(template_str);
+  if (!template) {
+    console.error(`${template_str} is not found!`);
+    return false;
+  }
+  const search_result_container = document.importNode(template.content, true);
+  const search_result_entries = search_result_container.querySelector('.entries');
+  if (!search_result_entries) {
+    console.error(`.entries is not found!`);
+    return false;
+  }
 
-const form = document.querySelector("form#search");
-if (!form) {
-  console.log("'form#search' is not found.");
+  template_str = "template#search-result-entry";
+  template = document.querySelector(template_str);
+  if (!template) {
+    console.error(`${template_str} is not found!`);
+    return false;
+  }
+  for (let entry of entries) {
+    const search_result_entry = document.importNode(template.content, true);
+    const title = entry.children[0].textContent
+    const url = entry.children[2].textContent
+    const content = entry.children[3].textContent
+    // const tags = entry.children[4].textContent
+    const ar = search_result_entry.querySelector('a.title');
+    ar.href = url;
+    ar.innerText = title;
+    const ct = search_result_entry.querySelector('.content');
+    ct.innerText = content.replace(/<[^>]*>/g, '').substring(0, 300) + '...';
+    search_result_entries.appendChild(search_result_entry);
+  }
+  return search_result_container;
+}
+
+const search_result_str = "#search-result";
+const searchResult = document.querySelector(search_result_str);
+if (!searchResult) {
+  console.error(`${search_result_str} is not found!`);
 }
 
 const fetch_path = '/search.xml';
@@ -64,6 +97,11 @@ if (!fetch_data) {
 }
 
 const search_text_tag = "input#search-text";
+const search_text = document.querySelector(search_text_tag);
+if (!search_text) {
+  console.error(search_text_tag + " is not found.");
+}
+
 function search() {
   if (!fetch_data) {
     console.error("'Cause fetch_data is null, exiting search()..");
@@ -73,7 +111,6 @@ function search() {
     console.error(div_search_result_str + " is not found!");
     return false;
   }
-  const search_text = document.querySelector(search_text_tag);
   if (!search_text) {
     console.error(search_text_tag + " is not found.");
     return false;
@@ -89,8 +126,14 @@ function search() {
     if (entries.length <= 0) {
       console.log("entries.length is zero.");
     }
-    search_result = makeSearchResult(entries)
-    searchResult.innerHTML = search_result;
+    while (searchResult.firstChild) {
+      searchResult.removeChild(searchResult.firstChild);
+    }
+    search_result = makeSearchResultFromTemplates(entries)
+    if (search_result) {
+      searchResult.appendChild(search_result);
+    }
+    // searchResult.innerHTML = search_result;
     // Event.preventDefault();
   })
   return true;
