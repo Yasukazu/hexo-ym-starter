@@ -74,7 +74,6 @@ function makeSearchResultFromTemplates (entries) {
     ar.innerText = title;
     // pick up date from url beginning
     const date_str = startsFromDate(url);
-    debugger;
     if (date_str) {
       const dt = entry_output.querySelector('.date');
       if (dt) {
@@ -103,7 +102,6 @@ function makeSearchResultFromTemplates (entries) {
  * @returns {string}
  */
 function startsFromDate(url) {
-  debugger;
   const re = /(\d\d\d\d)\/(\d\d)\/(\d\d)/;
   const date = re.exec(url);
   if (date && date.length > 3) {

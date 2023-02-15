@@ -142,7 +142,9 @@ code::after {
 div.search-result-container {
   border: thin solid black;
 }
-
-li.search-result-entry {
+div.search-result-container li.search-result-entry {
   background-color: #fff;
+}
+div.search-result-container li.search-result-entry .date {
+  margin-left: 1em;
 }
