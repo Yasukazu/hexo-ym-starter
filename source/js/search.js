@@ -157,7 +157,7 @@ function search() {
       console.log("entries.length is zero.");
     }
     while (searchResult.firstChild) {
-      searchResult.removeChild(searchResult.firstChild);
+      searchResult.firstChild.remove();
     }
     const search_result = makeSearchResultFromTemplates(entries)
     if (search_result) {
