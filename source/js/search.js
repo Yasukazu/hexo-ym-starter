@@ -58,7 +58,7 @@ function makeSearchResultFromTemplates (entries) {
     throw `${template_str} is not found!`;
   }
   for (let entry of entries) {
-    const search_result_entry = document.importNode(template.content, true);
+    const entry_output = document.importNode(template.content, true);
     const title = entry.children[0].textContent
     if (!title) {
       throw "No title!";
@@ -67,18 +67,52 @@ function makeSearchResultFromTemplates (entries) {
     if (!url) {
       throw "No url!";
     }
-    const content = entry.children[3].textContent
+
     // const tags = entry.children[4].textContent
-    const ar = search_result_entry.querySelector('a.title');
+    const ar = entry_output.querySelector('a.title');
     ar.href = url;
     ar.innerText = title;
-    const ct = search_result_entry.querySelector('.content');
-    if (content) {
-      ct.innerText = content.replace(/<[^>]*>/g, '').substring(0, 300) + '...';
+    // pick up date from url beginning
+    const date_str = startsFromDate(url);
+    debugger;
+    if (date_str) {
+      const dt = entry_output.querySelector('.date');
+      if (dt) {
+        dt.innerText = date_str;
+      }
     }
-    search_result_entries.appendChild(search_result_entry);
+
+    const ct = entry_output.querySelector('.content');
+    if (ct){
+      const content = entry.children[3].textContent;
+      const content_tree = content ? new DOMParser().parseFromString(content, "text/html") : null;
+      const text_content = content_tree?.children[0]?.textContent;
+      if (text_content) {
+        // ct.innerText = content.replace(/<[^>]*>/g, '').substring(0, 300) + '...';
+        ct.innerText = text_content.substring(0, 300) + '...';
+      }
+    }
+    search_result_entries.appendChild(entry_output);
   }
   return search_result_container;
+}
+
+/**
+ * Check url string represents a valid date
+ * @param {string} url 
+ * @returns {string}
+ */
+function startsFromDate(url) {
+  debugger;
+  const re = /(\d\d\d\d)\/(\d\d)\/(\d\d)/;
+  const date = re.exec(url);
+  if (date && date.length > 3) {
+    const dt = [date[1], date[2], date[3]].join('-');
+    const dateNum = Date.parse(dt);
+    if (!isNaN(dateNum))
+      return dt;
+  }
+  return '';
 }
 
 const search_result_str = "#search-result";
