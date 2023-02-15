@@ -91,7 +91,7 @@ function makeSearchResultFromTemplates (entries) {
         ct.innerText = text_content.substring(0, 300) + '...';
       }
     }
-    search_result_entries.appendChild(entry_output);
+    search_result_entries.append(entry_output);
   }
   return search_result_container;
 }
@@ -161,7 +161,7 @@ function search() {
     }
     const search_result = makeSearchResultFromTemplates(entries)
     if (search_result) {
-      searchResult.appendChild(search_result);
+      searchResult.append(search_result);
     }
     // searchResult.innerHTML = search_result;
     // Event.preventDefault();
