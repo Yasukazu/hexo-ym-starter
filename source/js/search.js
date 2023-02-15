@@ -16,43 +16,29 @@ function fetchData (fetchUrl) {
   })
 }
 
+/**
+ * 
+ * @param {Document} document 
+ * @param {string} query 
+ * @returns 
+ */
 function analyzeData(document, query) {
   const entries = document.getElementsByTagName('entry')
   const matchEntries = []
+  const regExp = new RegExp(query)
   for (var entry of entries) {
-    const regExp = new RegExp(query)
-    if (regExp.test(entry.children[0].textContent) ||
-        regExp.test(entry.children[2].textContent)) {
+     if (entry?.children[0]?.textContent && regExp.test(entry.children[0].textContent) ||
+        entry?.children[2]?.textContent && regExp.test(entry.children[2].textContent)) {
       matchEntries.push(entry)
     }
   }
   return matchEntries
 }
 
-function makeSearchResult (entries) {
-  let innerHTML = ''
-  for (let entry of entries) {
-    innerHTML += '<div class="search-result-entry">'
-    const title = entry.children[0].textContent
-    // const link = entry.children[1].textContent
-    const url = entry.children[2].textContent
-    const content = entry.children[3].textContent
-    // const tags = entry.children[4].textContent
-    innerHTML += '<h2><a href="' + url + '">' + title + '</a></h2>'
-    const thumbnail = /<img[^>]*>/.exec(content)
-    if (thumbnail && thumbnail.length >= 1) {
-      innerHTML += '<div class="search-result-thumbnail">' + thumbnail[1] + '</div>'
-    }
-    innerHTML += content.replace(/<[^>]*>/g, '').substring(0, 300)
-    innerHTML += '...</div>'
-  }
-  return innerHTML
-}
-
 /**
  * 
- * @param {Array<Node>} entries 
- * @returns {Node}
+ * @param {Array<Element>} entries 
+ * @returns {Element}
  */
 function makeSearchResultFromTemplates (entries) {
   let template_str = "template#search-result-container";
@@ -74,14 +60,22 @@ function makeSearchResultFromTemplates (entries) {
   for (let entry of entries) {
     const search_result_entry = document.importNode(template.content, true);
     const title = entry.children[0].textContent
+    if (!title) {
+      throw "No title!";
+    }
     const url = entry.children[2].textContent
+    if (!url) {
+      throw "No url!";
+    }
     const content = entry.children[3].textContent
     // const tags = entry.children[4].textContent
     const ar = search_result_entry.querySelector('a.title');
     ar.href = url;
     ar.innerText = title;
     const ct = search_result_entry.querySelector('.content');
-    ct.innerText = content.replace(/<[^>]*>/g, '').substring(0, 300) + '...';
+    if (content) {
+      ct.innerText = content.replace(/<[^>]*>/g, '').substring(0, 300) + '...';
+    }
     search_result_entries.appendChild(search_result_entry);
   }
   return search_result_container;

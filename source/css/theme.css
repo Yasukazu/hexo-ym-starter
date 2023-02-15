@@ -138,3 +138,11 @@ code::before {
 code::after {
   border-top: thin solid #000;
 }
+
+div.search-result-container {
+  border: thin solid black;
+}
+
+li.search-result-entry {
+  background-color: #fff;
+}
