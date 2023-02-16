@@ -1,5 +1,5 @@
 //@ts-check
-import {XRegexp, test} from 'xregexp';
+// import {XRegExp} from 'xregexp';
 /**
  * 
  * @param {string} fetchUrl 
@@ -22,6 +22,7 @@ function fetchData (fetchUrl) {
   })
 }
 
+// import XRegExp from 'xregexp/xregexp-all.js';
 /**
  * 
  * @param {Document} document 
@@ -29,19 +30,20 @@ function fetchData (fetchUrl) {
  * @returns 
  */
 function analyzeData(document, query_str) {
-  const entries = document.getElementsByTagName('entry')
-  const matchEntries = []
+  const entries = document.getElementsByTagName('entry');
+  const matchEntries = [];
   const normalized_query = query_str.normalize('NFKD');
-  const combining_chars_regex = XRegexp.build(`\p{Mark}/g`);
+  const combining_chars_regex = /\p{Mark}/gu;
   const query = normalized_query.replace(combining_chars_regex, '');
-  const query_regex = XRegexp.build(query);
+  const query_regex = RegExp(query);
   const test_children = [0, 2];
   for (var entry of entries) {
     let match = false;
+    let content = '';
     for (var cn of test_children) {
-      let content = entry.children[cn]?.textContent;
-      if (content)
-        content = content.normalize('NFKD').replace(combining_chars_regex, "");
+      let _content = entry.children[cn]?.textContent;
+      if (_content)
+        content = _content.normalize('NFKD').replace(combining_chars_regex, "");
       if (query_regex.test(content)) {
         match = true;
         break;
