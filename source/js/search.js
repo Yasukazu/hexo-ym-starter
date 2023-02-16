@@ -1,5 +1,5 @@
 //@ts-check
-import {XRegexp} from 'xregexp';
+import {XRegexp, test} from 'xregexp';
 /**
  * 
  * @param {string} fetchUrl 
@@ -34,13 +34,23 @@ function analyzeData(document, query_str) {
   const normalized_query = query_str.normalize('NFKD');
   const combining_chars_regex = XRegexp.build(`\p{Mark}/g`);
   const query = normalized_query.replace(combining_chars_regex, '');
+  const query_regex = XRegexp.build(query);
+  const test_children = [0, 2];
   for (var entry of entries) {
-     if (entry?.children[0]?.textContent && query_regex.test(entry.children[0].textContent.normalize('NFKD').replace(combining_chars, "")) ||
-        entry?.children[2]?.textContent && regExp.test(entry.children[2].textContent.normalize('NFKD').replace(combining_chars, ""))) {
-      matchEntries.push(entry)
+    let match = false;
+    for (var cn of test_children) {
+      let content = entry.children[cn]?.textContent;
+      if (content)
+        content = content.normalize('NFKD').replace(combining_chars_regex, "");
+      if (query_regex.test(content)) {
+        match = true;
+        break;
+      }
     }
+    if (match)
+      matchEntries.push(entry);
   }
-  return matchEntries
+  return matchEntries;
 }
 
 /**
