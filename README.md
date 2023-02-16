@@ -36,11 +36,41 @@ template#search-result-entry
 These templates use a script file of `themes/ym-start/source/js/search.js`.
 Don't change tag names and their class names except `h2`, `time` and `p` tags.
 
-### XRegexp
+### Ignore Unicode Combining Characters(accents) in search
+Using normalize('NFKD')
 
-<https://github.com/slevithan/xregexp>
+- Also Japanese _dakuten_ and _handakuten_
 
-In scripts.pug
-```pug
-script(src="https://unpkg.com/xregexp/xregexp-all.js")
+```javascript
+/**
+ * 
+ * @param {Document} document // XML
+ * @param {string} query_str // Regex expression
+ * @returns {Array<Element>}
+ */
+function analyzeData(document, query_str) {
+  const entries = document.getElementsByTagName('entry');
+  const matchEntries = [];
+  const normalized_query = query_str.normalize('NFKD');
+  const combining_chars_regex = /\p{Mark}/gu;
+  const query = normalized_query.replace(combining_chars_regex, '');
+  const query_regex = RegExp(query);
+  const test_children = [0, 2];
+  for (var entry of entries) {
+    let match = false;
+    let content = '';
+    for (var cn of test_children) {
+      let _content = entry.children[cn]?.textContent;
+      if (_content)
+        content = _content.normalize('NFKD').replace(combining_chars_regex, "");
+      if (query_regex.test(content)) {
+        match = true;
+        break;
+      }
+    }
+    if (match)
+      matchEntries.push(entry);
+  }
+  return matchEntries;
+}
 ```
