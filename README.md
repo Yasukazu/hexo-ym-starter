@@ -35,3 +35,12 @@ template#search-result-entry
 ```
 These templates use a script file of `themes/ym-start/source/js/search.js`.
 Don't change tag names and their class names except `h2`, `time` and `p` tags.
+
+### XRegexp
+
+<https://github.com/slevithan/xregexp>
+
+In scripts.pug
+```pug
+script(src="https://unpkg.com/xregexp/xregexp-all.js")
+```

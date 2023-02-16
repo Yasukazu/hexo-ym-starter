@@ -1,4 +1,10 @@
 //@ts-check
+import {XRegexp} from 'xregexp';
+/**
+ * 
+ * @param {string} fetchUrl 
+ * @returns {Promise}
+ */
 function fetchData (fetchUrl) {
   return new Promise(resolve => {
     const xhr = new XMLHttpRequest()
@@ -19,16 +25,18 @@ function fetchData (fetchUrl) {
 /**
  * 
  * @param {Document} document 
- * @param {string} query 
+ * @param {string} query_str 
  * @returns 
  */
-function analyzeData(document, query) {
+function analyzeData(document, query_str) {
   const entries = document.getElementsByTagName('entry')
   const matchEntries = []
-  const regExp = new RegExp(query)
+  const normalized_query = query_str.normalize('NFKD');
+  const combining_chars_regex = XRegexp.build(`\p{Mark}/g`);
+  const query = normalized_query.replace(combining_chars_regex, '');
   for (var entry of entries) {
-     if (entry?.children[0]?.textContent && regExp.test(entry.children[0].textContent) ||
-        entry?.children[2]?.textContent && regExp.test(entry.children[2].textContent)) {
+     if (entry?.children[0]?.textContent && query_regex.test(entry.children[0].textContent.normalize('NFKD').replace(combining_chars, "")) ||
+        entry?.children[2]?.textContent && regExp.test(entry.children[2].textContent.normalize('NFKD').replace(combining_chars, ""))) {
       matchEntries.push(entry)
     }
   }
