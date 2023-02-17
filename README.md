@@ -36,7 +36,6 @@ template#search-result-entry
 These templates use a script file of `themes/ym-start/source/js/search.js`.
 Don't change tag names and their class names except `h2`, `time` and `p` tags.
 
-### Ignore Unicode Combining Characters(accents) in search
-Using normalize('NFKD')
+### Search ignores Unicode Combining Characters(diacritical marks:[ñ], Japanese _dakuten_ and _handakuten_)
 
-- Also Japanese _dakuten_ and _handakuten_
+Using **normalize('NFKD')** method of JavaScript
