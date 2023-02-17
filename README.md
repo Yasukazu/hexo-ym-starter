@@ -31,10 +31,11 @@ template#search-result-entry
   li.search-result-entry
     a.title
     time.date
-    p.content
+    p(data-length=200).content
 ```
 These templates use a script file of `themes/ym-start/source/js/search.js`.
 Don't change tag names and their class names except `h2`, `time` and `p` tags.
+- Content cut-off length is adjustable with `data-length` attribute(default=300).
 
 ### Search ignores Unicode Combining Characters(diacritical marks:[ñ], Japanese _dakuten_ and _handakuten_)
 
