@@ -27,40 +27,52 @@ function fetchData (fetchUrl) {
  * 
  * @param {Document} document // XML
  * @param {string} query_str // Regex expression
- * @returns {Array<Element>}
+ * @returns {Object< Array<Element>, Array<string> >}
  */
 function analyzeData(document, query_str) {
   const entries = document.getElementsByTagName('entry');
   const matchEntries = [];
+  const matchItems = [];
   const normalized_query = query_str.normalize('NFKD');
   const combining_chars_regex = /\p{Mark}/gu;
   const query = normalized_query.replace(combining_chars_regex, '');
   const query_regex = RegExp(query);
   const test_children = [0, 2];
-  for (var entry of entries) {
+  const test_items = ['title', 'content', 'tag', 'category']; // true: single, true: multiple
+  for (let entry of entries) {
     let match = false;
     let content = '';
-    for (var cn of test_children) {
-      let _content = entry.children[cn]?.textContent;
-      if (_content)
-        content = _content.normalize('NFKD').replace(combining_chars_regex, "");
-      if (query_regex.test(content)) {
-        match = true;
-        break;
+    let item = '';
+    for (item of test_items) { // for (let cn of test_children) {
+      const elements = entry.querySelectorAll(item);
+      if (elements) {
+        for (let elem of elements) {
+          let text = elem.textContent;
+          if (text) {
+            content = text.normalize('NFKD').replace(combining_chars_regex, "");
+            if (content && query_regex.test(content)) {
+              match = true;
+              break;
+            }
+          }
+        }
       }
     }
     if (match)
       matchEntries.push(entry);
+      matchItems.push(item);
   }
-  return matchEntries;
+  return {'entries': matchEntries, 'items': matchItems};
 }
 
 /**
  * 
- * @param {Array<Element>} entries 
+ * @param {Object< Array<Element>, Array<string> >} entries_items 
  * @returns {Element}
  */
-function makeSearchResultFromTemplates (entries) {
+function makeSearchResultFromTemplates (entries_items) {
+  const entries = entries_items.entries;
+  const items = entries_items.items;
   let template_str = "template#search-result-container";
   let template = document.querySelector(template_str);
   if (!template) {
@@ -77,13 +89,13 @@ function makeSearchResultFromTemplates (entries) {
   if (!template) {
     throw `${template_str} is not found!`;
   }
-  for (let entry of entries) {
+  for (const [i, entry] of entries) {
     const entry_output = document.importNode(template.content, true);
-    const title = entry.children[0].textContent
+    const title = entry.querySelector('title').textContent; // children[0]
     if (!title) {
       throw "No title!";
     }
-    const url = entry.children[2].textContent
+    const url = entry.querySelector('url').textContent; // 2
     if (!url) {
       throw "No url!";
     }
@@ -108,7 +120,8 @@ function makeSearchResultFromTemplates (entries) {
       const text_content = content_tree?.children[0]?.textContent;
       if (text_content) {
         // ct.innerText = content.replace(/<[^>]*>/g, '').substring(0, 300) + '...';
-        ct.innerText = text_content.substring(0, 300) + '...';
+        const chars = Array.from(text_content); // code point sequences
+        ct.innerText = chars.slice(0, 300).join();
       }
     }
     search_result_entries.append(entry_output);
@@ -172,14 +185,14 @@ function search() {
   }
   // let search_result = `FetchData from ${fetch_path} with ${queryWord}`;
   fetch_data.then(document => {
-    const entries = analyzeData(document, queryWord); 
-    if (entries.length <= 0) {
+    const entries_items = analyzeData(document, queryWord); 
+    if (entries_items.length <= 0) {
       console.log("entries.length is zero.");
     }
     while (searchResult.firstChild) {
       searchResult.firstChild.remove();
     }
-    const search_result = makeSearchResultFromTemplates(entries)
+    const search_result = makeSearchResultFromTemplates(entries_items)
     if (search_result) {
       searchResult.append(search_result);
     }
