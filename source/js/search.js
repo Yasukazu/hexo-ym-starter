@@ -1,5 +1,5 @@
 //@ts-check
-// import {XRegExp} from 'xregexp';
+import {makeThumbnail} from './thumbnail.js';
 /**
  * 
  * @param {string} fetchUrl 
