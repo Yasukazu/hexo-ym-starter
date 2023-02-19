@@ -1,5 +1,5 @@
 //@ts-check
-import {makeThumbnail} from './thumbnail.js';
+// import {makeThumbnail} from './thumbnail.js';
 /**
  * 
  * @param {string} fetchUrl 
@@ -98,15 +98,12 @@ function makeSearchResultFromTemplates (entries, items) {
     if (!url) {
       throw "No 'url' in entry!";
     }
-
-    // const tags = entry.children[4].textContent
     const ar = entry_output.querySelector('a.title');
     if (!ar) {
       throw "No 'a' in template!"
     }
     ar.href = url;
     ar.innerText = title;
-    // pick up date from url beginning
     const date_str = startsFromDate(url);
     if (date_str) {
       const dt = entry_output.querySelector('.date');
@@ -114,7 +111,6 @@ function makeSearchResultFromTemplates (entries, items) {
         dt.innerText = date_str;
       }
     }
-
     const ct = entry_output.querySelector('.content');
     if (ct){
       const content_elem = entry.querySelector('content'); // ?.textContent;
@@ -132,8 +128,17 @@ function makeSearchResultFromTemplates (entries, items) {
             }
           }
           const {output: limitedStr, on_break: onBreak} = getFirstNChars(cpcp, len);
-          // const innerText = chars.slice(0, 300).join('').replace(/\s+/g, ' ');
           ct.innerText = limitedStr + (onBreak ? '...' : '');
+          const img_out = entry_output.querySelector('img');
+          if (img_out) {
+            const img_in = content_tree.querySelector('img');
+            if (img_in) {
+              const img_src = img_in.getAttribute('src');
+              if (img_src) {
+                img_out.setAttribute('src', img_src);
+              }
+            }
+          }
         }
       }
     }
