@@ -37,6 +37,10 @@ else {
 
 const search_result_container_template = document.querySelector( "template#search-result-container");
 const search_result_container = search_result_container_template ? document.importNode(search_result_container_template.content, true) : null;
+const search_result_entries = search_result_container?.querySelector('.entries');
+
+const ignore_accents_checkbox = document.querySelector("input#check-ignore-accents");
+const ignore_case_checkbox = document.querySelector("input#check-ignore-case");
 
 /**
  * 
@@ -48,20 +52,14 @@ function analyzeData(document, query_str) {
   if (!search_result_container) {
     throw Error(`No search_result_container!`);
   }
-  const ignore_accents_checkbox = document.querySelector("input#check-ignore-accents");
-  const ignore_accents = (ignore_accents_checkbox && !ignore_accents_checkbox.getAttribute("checked")) ? false : true;
-  let ignore_case = true;
-  const ignore_case_checkbox = document.querySelector("input#check-ignore-case");
-  if (ignore_case_checkbox) {
-    if (!ignore_case_checkbox.getAttribute("checked"))
-      ignore_case = false;
-  }
+  const ignore_accents = (ignore_accents_checkbox && !ignore_accents_checkbox.checked) ? false : true;
+  const ignore_case = (ignore_case_checkbox && !ignore_case_checkbox.checked) ? false : true;
   const entries = document.getElementsByTagName('entry');
   const matchEntries = [];
   const matchItems = [];
   const query = query_str.normalize('NFKD');
+  const combining_chars_regex = ignore_accents ? /\p{Mark}/gu : '' ;
   if (ignore_accents) {
-    const combining_chars_regex = /\p{Mark}/gu;
     query.replace(combining_chars_regex, '');
   }
   const query_regex = RegExp(query, ignore_case ? 'ui' : 'u');
@@ -72,18 +70,18 @@ function analyzeData(document, query_str) {
     let content = '';
     let item = '';
     for (item of test_items) { // for (let cn of test_children) {
-      const elements = entry.querySelectorAll(item);
-      if (elements) {
-        for (let elem of elements) {
-          let text = elem.textContent;
+      const element = entry.querySelector(item);
+      if (element) {
+          let text = element.textContent?.replace(/<[^>]*>/gu, ' ');
           if (text) {
-            content = text.normalize('NFKD').replace(combining_chars_regex, "");
+            content = text.normalize('NFKD');
+            if (ignore_accents)
+              content.replace(combining_chars_regex, "");
             if (content && query_regex.test(content)) {
               match = true;
               break;
             }
           }
-        }
       }
     }
     if (match)
@@ -104,7 +102,6 @@ function makeSearchResultFromTemplates (entries, items) {
   if (!search_result_container) {
     throw Error(`no search_result_container!`);
   }
-  const search_result_entries = search_result_container.querySelector('.entries');
   if (!search_result_entries) {
     throw `.entries is not found in search result container!`;
   }
@@ -143,7 +140,7 @@ function makeSearchResultFromTemplates (entries, items) {
         const content_tree = new DOMParser().parseFromString(content_elem.textContent, "text/html");
         const innerHTML = content_tree?.children[0]?.innerHTML; // textContent;
         if (innerHTML) {
-          const cpcp = Array.from(innerHTML.replace(/<[^>]*>/g, ' ')); // code point sequences
+          const cpcp = Array.from(innerHTML.replace(/<[^>]*>/gu, ' ')); // code point sequences
           const length = ct.getAttribute('data-length');
           let len = 300;
           if (length) {
