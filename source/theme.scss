@@ -152,6 +152,9 @@ code {
 div {
 	&.search-result-container {
 		border: thin solid #000;
+		label[for|="input-ignore"] {
+			margin-right: 0.7em;
+		}
 		li {
 			&.search-result-entry {
 				background-color: #fff;

@@ -70,8 +70,7 @@ fieldset.form {
   background-color: var(--form-bg-color);
 }
 fieldset.form > legend {
-  -webkit-filter: brightness(70%);
-          filter: brightness(70%);
+  filter: brightness(70%);
 }
 form.send-message {
   display: flex;
@@ -93,8 +92,6 @@ form.send-message div.submit {
 form.send-message div.submit > button.submit {
   border-radius: 0.4em;
   margin-top: 1em;
-  width: -webkit-fit-content;
-  width: -moz-fit-content;
   width: fit-content;
 }
 code {
@@ -108,20 +105,15 @@ code::before {
 code::after {
   border-top: thin solid #000;
 }
-div.search-result-container {
-  border: thin solid #000;
+div#search label[for|="input-ignore"] {
+  margin-right: 0.8em;
 }
-
-div.search > label[for|="input-ignore"] {
-	margin-right: 0.7em;
-}
-
-div.search-result-container li.search-result-entry {
+div.search-result-container border thin solid black.search-result-entry {
   background-color: #fff;
 }
-div.search-result-container li.search-result-entry .date {
+div.search-result-container border thin solid black.search-result-entry .date {
   margin: 0 1em;
 }
-div.search-result-container li.search-result-entry > img {
+div.search-result-container border thin solid black.search-result-entry img {
   width: 20%;
 }
