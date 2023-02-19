@@ -36,8 +36,6 @@ else {
 }
 
 const search_result_container_template = document.querySelector( "template#search-result-container");
-const search_result_container = search_result_container_template ? document.importNode(search_result_container_template.content, true) : null;
-const search_result_entries = search_result_container?.querySelector('.entries');
 
 const ignore_accents_checkbox = document.querySelector("input#check-ignore-accents");
 const ignore_case_checkbox = document.querySelector("input#check-ignore-case");
@@ -49,9 +47,6 @@ const ignore_case_checkbox = document.querySelector("input#check-ignore-case");
  * @returns {Object< Array<Element>, Array<string> >}
  */
 function analyzeData(document, query_str) {
-  if (!search_result_container) {
-    throw Error(`No search_result_container!`);
-  }
   const ignore_accents = (ignore_accents_checkbox && !ignore_accents_checkbox.checked) ? false : true;
   const ignore_case = (ignore_case_checkbox && !ignore_case_checkbox.checked) ? false : true;
   const entries = document.getElementsByTagName('entry');
@@ -99,9 +94,14 @@ function analyzeData(document, query_str) {
  * @returns {Element}
  */
 function makeSearchResultFromTemplates (entries, items) {
-  if (!search_result_container) {
-    throw Error(`no search_result_container!`);
+  if (!search_result_container_template) {
+    throw Error(`No search_result_container_template !`);
   }
+  const search_result_container = document.importNode(search_result_container_template.content, true);
+  if (!search_result_container) {
+    throw Error(`No search_result_container!`);
+  }
+  const search_result_entries = search_result_container.querySelector('.entries');
   if (!search_result_entries) {
     throw `.entries is not found in search result container!`;
   }
