@@ -9,6 +9,10 @@ header.included
   div#search
     label(for="search-text") Enter search text:
     input#search-text(type="text" name="search-text")
+    input#input-ignore-case(type="checkbox" checked)
+    label(for="input-ignore-case") Ignore case
+    input#input-ignore-accents(type="checkbox" checked)
+    label(for="input-ignore-accents") Ignore accents
     input.submit(type="submit" onclick="search()")
   div#search-result
 
