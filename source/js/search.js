@@ -23,65 +23,6 @@ function fetchData(fetchUrl = fetch_path) {
   })
 }
 
-class SearchInput {
-  /** @typedef {(input: string, ignore_case: boolean|null, ignore_accents: boolean|null) => boolean} Callback
-   * 
-   */
-  static combining_chars_regex = /\p{Mark}/gu;
-  /**
-   * check container element of #search
-   * @param {string} submit_search 
-   * @param {string} ignore_case 
-   * @param {string} ignore_accents 
-   * @param {string} search_text 
-   */
-  constructor(submit_search = "submit-search", ignore_case = "ignore-case", ignore_accents = "ignore-accents", search_text = "search-text") {
-    /**
-     * @type {Callback|null}
-     */
-    this.callback = null;
-    this.submit_search_button = document.querySelector("button#" + submit_search);
-    if (this.submit_search_button) {
-      this.submit_search_button.addEventListener("click", function (event) {
-        if (this.callback) {
-          let queryWord = this.search_text.value;
-          if (!queryWord || queryWord.length <= 0) {
-            console.log("No search_text.value or search_text.length <= 0 !");
-            return false;
-          }
-          else {
-            queryWord = queryWord.normalize('NFKD');
-            if (ignore_accents.checked) {
-              queryWord.replace(SearchInput.combining_chars_regex, '');
-            }
-          }
-          this.callback(queryWord, ignore_case?.checked, ignore_accents?.checked);
-        }
-        else 
-          console.error(`!No callback function`);
-        event.preventDefault();
-      });
-    }
-    else
-      throw Error('!No button#' + submit_search);
-    this.ignore_accents = document.querySelector("input#" + ignore_accents);
-    if (!this.ignore_accents)
-      throw Error('!No input#' + ignore_accents);
-    this.ignore_case = document.querySelector("input#" + ignore_case);
-    if (!this.ignore_case)
-      throw Error('!No input#' + ignore_case);
-    this.search_text = document.querySelector("input#" + search_text);
-    if (!search_text)
-      throw Error('!No input#' + search_text);
-  }
-
-  /**
-   * @param {Callback} callback 
-   */
-  setCallback(callback) {
-    this.callback = callback;
-  }
-}
 
 class Search {
   /**
@@ -90,7 +31,7 @@ class Search {
    * @param {string} search_result_container 
    * @param {string} search_result 
    */
-  constructor(fetchdata_promise = fetchData(), submit_search = "submit-search", search_result_container = "search-result-container", search_result = "search-result", ignore_case_checkbox = "ignore-case-checkbox", ignore_accents_checkbox = "ignore-accents-checkbox", search_text = "search-text") {
+  constructor(fetchdata_promise = fetchData(), submit_search = "submit-search", search_result_container = "search-result-container", search_result = "search-result-entry", search_text = "search-text") {
 
     this.fetch_data = fetchdata_promise;
     if (!this.fetch_data)
@@ -99,7 +40,7 @@ class Search {
     this.submit_search_button = document.querySelector("button#" + submit_search);
     if (this.submit_search_button) {
       this.submit_search_button.addEventListener("click", function (event) {
-        this.search();
+        this.search_func();
         event.preventDefault();
       });
     }
@@ -111,12 +52,6 @@ class Search {
     this.search_result_template = document.querySelector("template#" + search_result);
     if (!this.search_result_template)
       throw Error('!No template#' + search_result);
-    this.ignore_case_checkbox = document.querySelector("input#" + ignore_case_checkbox);
-    if (!this.ignore_case_checkbox)
-      throw Error('!No input#' + ignore_case_checkbox);
-    this.ignore_accents_checkbox = document.querySelector("input#" + ignore_accents_checkbox);
-    if (!this.ignore_accents_checkbox)
-      throw Error('!No input#' + ignore_accents_checkbox);
     this.fetch_data = fetchdata_promise;
     if (!this.fetch_data)
       throw Error("!No fetch_data promise.");
@@ -129,6 +64,8 @@ class Search {
    * Picks up query-matching entries
    * @param {Document} document // XML
    * @param {string} query_str // Regex expression
+   * @param {boolean} ignore_case
+   * @param {boolean} ignore_accents
    * @returns {Object< Array<Element>, Array<string> >}
    */
   analyzeData(document, query_str, ignore_case, ignore_accents) {
@@ -190,7 +127,7 @@ class Search {
       const url = entry.querySelector('url')?.textContent; // 2
       if (!url) throw Error("No 'url' in entry!");
       const ar = entry_output.querySelector('a.title');
-      if (!ar) throw Error("No 'a' in template!)";
+      if (!ar) throw Error("No 'a' in template!");
       ar.href = url;
       ar.innerText = title;
       const date_str = startsFromDate(url);
@@ -240,44 +177,11 @@ class Search {
     return search_result_container;
   }
 
-  /**
-   * @returns {boolean}
-   */
-  /* search() {
-    if (!this.fetch_data) 
-      throw Error("'Cause fetch_data is null, exiting search()..");
-    if (!this.search_result_template) 
-      throw Error(`!No search result template`);
-    if (!this.search_text) 
-      throw Error(`!No search text`);
-    const queryWord = this.search_text.value;
-    if (!queryWord || queryWord.length <= 0) {
-      console.log("No search_text.value or search_text.length <= 0 !");
-      return false;
-    }
-    // let search_result = `FetchData from ${fetch_path} with ${queryWord}`;
-    this.fetch_data.then(document => {
-      const { entries, items } = this.analyzeData(document, queryWord);
-      if (entries.length <= 0) {
-        console.log("entries.length is zero.");
-      }
-      while (this.search_result_template.firstChild) {
-        this.search_result_template.firstChild.remove();
-      }
-      const search_result = this.makeSearchResultFromTemplates(entries, items);
-      if (search_result) {
-        this.search_result_template.append(search_result);
-      }
-      // search_result_template.innerHTML = search_result;
-      // Event.preventDefault();
-    })
-    return true;
-  } */
 
   /**
  * @param {string} queryWord
- * @param {boolean|null} ignore_case
- * @param {boolean|null} ignore_accents
+ * @param {boolean} ignore_case
+ * @param {boolean} ignore_accents
  * @returns {boolean}
  */
   search_func(queryWord, ignore_case = true, ignore_accents = true) {
@@ -301,9 +205,64 @@ class Search {
   }
 }
 
-const search_input = new SearchInput();
-const search = new Search();
-search_input.setCallback(search.search_func);
+class SearchInput {
+  /** @typedef {(input: string, ignore_case: boolean|null, ignore_accents: boolean|null) => boolean} Callback
+   * 
+   */
+  static combining_chars_regex = /\p{Mark}/gu;
+  /**
+   * check container element of #search
+   * @param {Callback} callback
+   * @param {string} submit_search 
+   * @param {string} ignore_case 
+   * @param {string} ignore_accents 
+   * @param {string} search_text 
+   */
+  constructor(callback, submit_search = "submit-search", ignore_case = "ignore-case", ignore_accents = "ignore-accents", search_text = "search-text") {
+    /**
+     * @type {Callback|null}
+     */
+    this.callback = callback;
+    this.submit_search_button = document.querySelector("button#" + submit_search);
+    if (this.submit_search_button) {
+      this.submit_search_button.addEventListener("click", function (event) {
+        let queryWord = this.search_text.value;
+        if (!queryWord || queryWord.length <= 0) {
+          console.log("No search_text.value or search_text.length <= 0 !");
+          return false;
+        }
+        else {
+          queryWord = queryWord.normalize('NFKD');
+          if (ignore_accents.checked) {
+            queryWord.replace(SearchInput.combining_chars_regex, '');
+          }
+        }
+        this.callback(queryWord, ignore_case?.checked, ignore_accents?.checked);
+
+        event.preventDefault();
+      });
+    }
+    else
+      throw Error('!No button#' + submit_search);
+    this.ignore_accents = document.querySelector("input#" + ignore_accents);
+    if (!this.ignore_accents)
+      throw Error('!No input#' + ignore_accents);
+    this.ignore_case = document.querySelector("input#" + ignore_case);
+    if (!this.ignore_case)
+      throw Error('!No input#' + ignore_case);
+    this.search_text = document.querySelector("input#" + search_text);
+    if (!search_text)
+      throw Error('!No input#' + search_text);
+  }
+
+  /**
+   * @param {Callback} callback 
+   */
+  setCallback(callback) {
+    this.callback = callback;
+  }
+}
+
 
 /**
  * 
