@@ -280,7 +280,7 @@ class Search {
  * @param {boolean|null} ignore_accents
  * @returns {boolean}
  */
-  search_text(queryWord, ignore_case = true, ignore_accents = true) {
+  search_func(queryWord, ignore_case = true, ignore_accents = true) {
     // let search_result = `FetchData from ${fetch_path} with ${queryWord}`;
     this.fetch_data.then(document => {
       const { entries, items } = this.analyzeData(document, queryWord, ignore_case, ignore_accents);
@@ -290,7 +290,7 @@ class Search {
       while (this.search_result_template.firstChild) {
         this.search_result_template.firstChild.remove();
       }
-      const search_result = this.makeSearchResultFromTemplates(entries, items, ignore_case, ignore_accents);
+      const search_result = this.makeSearchResultFromTemplates(entries, items);
       if (search_result) {
         this.search_result_template.append(search_result);
       }
@@ -303,7 +303,7 @@ class Search {
 
 const search_input = new SearchInput();
 const search = new Search();
-search_input.setCallback(search.search_text);
+search_input.setCallback(search.search_func);
 
 /**
  * 
