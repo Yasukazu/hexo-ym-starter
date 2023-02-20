@@ -11,11 +11,11 @@ header.included
   form#search-container
     label(for="search-text") Enter search text:
     input#search-text(type="text" name="search-text")
-    input#check-ignore-case(type="checkbox" checked)
-    label(for="check-ignore-case") Ignore case
-    input#check-ignore-accents(type="checkbox" checked)
-    label(for="check-ignore-accents") Ignore accents
-    button(id=submit_search) Search
+    input#ignore-case(type="checkbox" checked)
+    label(for="ignore-case") Ignore case
+    input#ignore-accents(type="checkbox" checked)
+    label(for="ignore-accents") Ignore accents
+    button#submit_search Search
   div#search-result
 
 template#search-result-container
