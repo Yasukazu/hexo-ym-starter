@@ -131,9 +131,9 @@ class Search {
    * @param {string} query_str // Regex expression
    * @returns {Object< Array<Element>, Array<string> >}
    */
-  analyzeData(document, query_str) {
-    const ignore_accents = (!this.ignore_accents_checkbox.checked) ? false : true;
-    const ignore_case = (!this.ignore_case_checkbox.checked) ? false : true;
+  analyzeData(document, query_str, ignore_case, ignore_accents) {
+    // const ignore_accents = (!this.ignore_accents_checkbox.checked) ? false : true;
+    // const ignore_case = (!this.ignore_case_checkbox.checked) ? false : true;
     const entries = document.getElementsByTagName('entry');
     const matchEntries = [];
     const matchItems = [];
@@ -243,7 +243,7 @@ class Search {
   /**
    * @returns {boolean}
    */
-  search() {
+  /* search() {
     if (!this.fetch_data) 
       throw Error("'Cause fetch_data is null, exiting search()..");
     if (!this.search_result_template) 
@@ -272,10 +272,38 @@ class Search {
       // Event.preventDefault();
     })
     return true;
+  } */
+
+  /**
+ * @param {string} queryWord
+ * @param {boolean|null} ignore_case
+ * @param {boolean|null} ignore_accents
+ * @returns {boolean}
+ */
+  search_text(queryWord, ignore_case = true, ignore_accents = true) {
+    // let search_result = `FetchData from ${fetch_path} with ${queryWord}`;
+    this.fetch_data.then(document => {
+      const { entries, items } = this.analyzeData(document, queryWord, ignore_case, ignore_accents);
+      if (entries.length <= 0) {
+        console.log("entries.length is zero.");
+      }
+      while (this.search_result_template.firstChild) {
+        this.search_result_template.firstChild.remove();
+      }
+      const search_result = this.makeSearchResultFromTemplates(entries, items, ignore_case, ignore_accents);
+      if (search_result) {
+        this.search_result_template.append(search_result);
+      }
+      // search_result_template.innerHTML = search_result;
+      // Event.preventDefault();
+    })
+    return true;
   }
 }
 
+const search_input = new SearchInput();
 const search = new Search();
+search_input.setCallback(search.search_text);
 
 /**
  * 
