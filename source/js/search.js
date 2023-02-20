@@ -1,11 +1,12 @@
 //@ts-check
-// import {makeThumbnail} from './thumbnail.js';
+
+const fetch_path = '/search.xml';
 /**
  * 
  * @param {string} fetchUrl 
  * @returns {Promise}
  */
-function fetchData (fetchUrl) {
+function fetchData(fetchUrl = fetch_path) {
   return new Promise(resolve => {
     const xhr = new XMLHttpRequest()
     xhr.open('GET', fetchUrl, true)
@@ -22,51 +23,135 @@ function fetchData (fetchUrl) {
   })
 }
 
-
-// check container element of #search
-const submit_search_button = document.querySelector("button#submit-search");
-if (submit_search_button) {
-  submit_search_button.addEventListener("click", function(event) {
-    search();
-    event.preventDefault();
-  });
-}
-else {
-  console.error("No button#submit-search !");
-}
-
-const search_result_container_template = document.querySelector( "template#search-result-container");
-
-const ignore_accents_checkbox = document.querySelector("input#check-ignore-accents");
-const ignore_case_checkbox = document.querySelector("input#check-ignore-case");
-
-/**
- * 
- * @param {Document} document // XML
- * @param {string} query_str // Regex expression
- * @returns {Object< Array<Element>, Array<string> >}
- */
-function analyzeData(document, query_str) {
-  const ignore_accents = (ignore_accents_checkbox && !ignore_accents_checkbox.checked) ? false : true;
-  const ignore_case = (ignore_case_checkbox && !ignore_case_checkbox.checked) ? false : true;
-  const entries = document.getElementsByTagName('entry');
-  const matchEntries = [];
-  const matchItems = [];
-  const query = query_str.normalize('NFKD');
-  const combining_chars_regex = ignore_accents ? /\p{Mark}/gu : '' ;
-  if (ignore_accents) {
-    query.replace(combining_chars_regex, '');
+class SearchInput {
+  /** @typedef {(input: string, ignore_case: boolean|null, ignore_accents: boolean|null) => boolean} Callback
+   * 
+   */
+  static combining_chars_regex = /\p{Mark}/gu;
+  /**
+   * check container element of #search
+   * @param {string} submit_search 
+   * @param {string} ignore_case 
+   * @param {string} ignore_accents 
+   * @param {string} search_text 
+   */
+  constructor(submit_search = "submit-search", ignore_case = "ignore-case", ignore_accents = "ignore-accents", search_text = "search-text") {
+    /**
+     * @type {Callback|null}
+     */
+    this.callback = null;
+    this.submit_search_button = document.querySelector("button#" + submit_search);
+    if (this.submit_search_button) {
+      this.submit_search_button.addEventListener("click", function (event) {
+        if (this.callback) {
+          let queryWord = this.search_text.value;
+          if (!queryWord || queryWord.length <= 0) {
+            console.log("No search_text.value or search_text.length <= 0 !");
+            return false;
+          }
+          else {
+            queryWord = queryWord.normalize('NFKD');
+            if (ignore_accents.checked) {
+              queryWord.replace(SearchInput.combining_chars_regex, '');
+            }
+          }
+          this.callback(queryWord, ignore_case?.checked, ignore_accents?.checked);
+        }
+        else 
+          console.error(`!No callback function`);
+        event.preventDefault();
+      });
+    }
+    else
+      throw Error('!No button#' + submit_search);
+    this.ignore_accents = document.querySelector("input#" + ignore_accents);
+    if (!this.ignore_accents)
+      throw Error('!No input#' + ignore_accents);
+    this.ignore_case = document.querySelector("input#" + ignore_case);
+    if (!this.ignore_case)
+      throw Error('!No input#' + ignore_case);
+    this.search_text = document.querySelector("input#" + search_text);
+    if (!search_text)
+      throw Error('!No input#' + search_text);
   }
-  const query_regex = RegExp(query, ignore_case ? 'ui' : 'u');
-  // const test_children = [0, 2];
-  const test_items = ['title', 'content'];
-  for (let entry of entries) {
-    let match = false;
-    let content = '';
-    let item = '';
-    for (item of test_items) { // for (let cn of test_children) {
-      const element = entry.querySelector(item);
-      if (element) {
+
+  /**
+   * @param {Callback} callback 
+   */
+  setCallback(callback) {
+    this.callback = callback;
+  }
+}
+
+class Search {
+  /**
+   * check container element of #search
+   * @param {string} submit_search 
+   * @param {string} search_result_container 
+   * @param {string} search_result 
+   */
+  constructor(fetchdata_promise = fetchData(), submit_search = "submit-search", search_result_container = "search-result-container", search_result = "search-result", ignore_case_checkbox = "ignore-case-checkbox", ignore_accents_checkbox = "ignore-accents-checkbox", search_text = "search-text") {
+
+    this.fetch_data = fetchdata_promise;
+    if (!this.fetch_data)
+      throw Error('!No fetch data.');
+
+    this.submit_search_button = document.querySelector("button#" + submit_search);
+    if (this.submit_search_button) {
+      this.submit_search_button.addEventListener("click", function (event) {
+        this.search();
+        event.preventDefault();
+      });
+    }
+    else
+      throw Error('!No button#' + submit_search);
+    this.search_result_container_template = document.querySelector("template#" + search_result_container);
+    if (!this.search_result_container_template)
+      throw Error('!No template#' + search_result_container);
+    this.search_result_template = document.querySelector("template#" + search_result);
+    if (!this.search_result_template)
+      throw Error('!No template#' + search_result);
+    this.ignore_case_checkbox = document.querySelector("input#" + ignore_case_checkbox);
+    if (!this.ignore_case_checkbox)
+      throw Error('!No input#' + ignore_case_checkbox);
+    this.ignore_accents_checkbox = document.querySelector("input#" + ignore_accents_checkbox);
+    if (!this.ignore_accents_checkbox)
+      throw Error('!No input#' + ignore_accents_checkbox);
+    this.fetch_data = fetchdata_promise;
+    if (!this.fetch_data)
+      throw Error("!No fetch_data promise.");
+    this.search_text = document.querySelector("input#" + search_text);
+    if (!search_text)
+      throw Error('!No input#' + search_text);
+  }
+
+  /**
+   * Picks up query-matching entries
+   * @param {Document} document // XML
+   * @param {string} query_str // Regex expression
+   * @returns {Object< Array<Element>, Array<string> >}
+   */
+  analyzeData(document, query_str) {
+    const ignore_accents = (!this.ignore_accents_checkbox.checked) ? false : true;
+    const ignore_case = (!this.ignore_case_checkbox.checked) ? false : true;
+    const entries = document.getElementsByTagName('entry');
+    const matchEntries = [];
+    const matchItems = [];
+    const query = query_str.normalize('NFKD');
+    const combining_chars_regex = ignore_accents ? /\p{Mark}/gu : '';
+    if (ignore_accents) {
+      query.replace(combining_chars_regex, '');
+    }
+    const query_regex = RegExp(query, ignore_case ? 'ui' : 'u');
+    // const test_children = [0, 2];
+    const test_items = ['title', 'content'];
+    for (let entry of entries) {
+      let match = false;
+      let content = '';
+      let item = '';
+      for (item of test_items) { // for (let cn of test_children) {
+        const element = entry.querySelector(item);
+        if (element) {
           let text = element.textContent?.replace(/<[^>]*>/gu, ' ');
           if (text) {
             content = text.normalize('NFKD');
@@ -77,101 +162,120 @@ function analyzeData(document, query_str) {
               break;
             }
           }
+        }
       }
-    }
-    if (match)
-      matchEntries.push(entry);
+      if (match)
+        matchEntries.push(entry);
       matchItems.push(item);
+    }
+    return { 'entries': matchEntries, 'items': matchItems };
   }
-  return {'entries': matchEntries, 'items': matchItems};
-}
 
-
-/**
- * 
- * @param {Array<Element>} entries
- * @param {Array<string>} items 
- * @returns {Element}
- */
-function makeSearchResultFromTemplates (entries, items) {
-  if (!search_result_container_template) {
-    throw Error(`No search_result_container_template !`);
-  }
-  const search_result_container = document.importNode(search_result_container_template.content, true);
-  if (!search_result_container) {
-    throw Error(`No search_result_container!`);
-  }
-  const search_result_entries = search_result_container.querySelector('.entries');
-  if (!search_result_entries) {
-    throw `.entries is not found in search result container!`;
-  }
-  const template_str = "template#search-result-entry";
-  const template = document.querySelector(template_str);
-  if (!template) {
-    throw `'${template_str}' template is not found!`;
-  }
-  for (const [index, entry] of entries.entries()) {
-    const entry_output = document.importNode(template.content, true);
-    const title = entry.querySelector('title')?.textContent; // children[0]
-    if (!title) {
-      throw "No title in entry!";
-    }
-    const url = entry.querySelector('url')?.textContent; // 2
-    if (!url) {
-      throw "No 'url' in entry!";
-    }
-    const ar = entry_output.querySelector('a.title');
-    if (!ar) {
-      throw "No 'a' in template!"
-    }
-    ar.href = url;
-    ar.innerText = title;
-    const date_str = startsFromDate(url);
-    if (date_str) {
-      const dt = entry_output.querySelector('.date');
-      if (dt) {
-        dt.innerText = date_str;
+  /**
+   * 
+   * @param {Array<Element>} entries
+   * @param {Array<string>} items 
+   * @returns {Element}
+   */
+  makeSearchResultFromTemplates(entries, items) {
+    const search_result_container = document.importNode(this.search_result_container_template.content, true);
+    if (!search_result_container) throw Error(`Failed to get a search_result_container from its template!`);
+    const search_result_entries = search_result_container.querySelector('.entries');
+    if (!search_result_entries) throw Error(`An element with entries class is not found in search result container template!`);
+    for (const [index, entry] of entries.entries()) {
+      const entry_output = document.importNode(this.search_result_template.content, true);
+      if (!entry_output) throw Error(`!Failed to import node from search_result_template`);
+      const title = entry.querySelector('title')?.textContent; // children[0]
+      if (!title) throw Error("No title in entry!");
+      const url = entry.querySelector('url')?.textContent; // 2
+      if (!url) throw Error("No 'url' in entry!");
+      const ar = entry_output.querySelector('a.title');
+      if (!ar) throw Error("No 'a' in template!)";
+      ar.href = url;
+      ar.innerText = title;
+      const date_str = startsFromDate(url);
+      if (date_str) {
+        const dt = entry_output.querySelector('.date');
+        if (dt) {
+          dt.innerText = date_str;
+        }
       }
-    }
-    const ct = entry_output.querySelector('.content');
-    if (ct){
-      const content_elem = entry.querySelector('content'); // ?.textContent;
-      if (content_elem && content_elem.textContent) {
-        const content_tree = new DOMParser().parseFromString(content_elem.textContent, "text/html");
-        const innerHTML = content_tree?.children[0]?.innerHTML; // textContent;
-        if (innerHTML) {
-          const cpcp = Array.from(innerHTML.replace(/<[^>]*>/gu, ' ')); // code point sequences
-          const length = ct.getAttribute('data-length');
-          let len = 300;
-          if (length) {
-            const _len = parseInt(length, 10);
-            if (_len) {
-              len = _len;
+      const ct = entry_output.querySelector('.content');
+      if (ct) {
+        const content_elem = entry.querySelector('content'); // ?.textContent;
+        if (content_elem && content_elem.textContent) {
+          const content_tree = new DOMParser().parseFromString(content_elem.textContent, "text/html");
+          const innerHTML = content_tree?.children[0]?.innerHTML; // textContent;
+          if (innerHTML) {
+            const cpcp = Array.from(innerHTML.replace(/<[^>]*>/gu, ' ')); // code point sequences
+            const length = ct.getAttribute('data-length');
+            let len = 300;
+            if (length) {
+              const _len = parseInt(length, 10);
+              if (_len) {
+                len = _len;
+              }
             }
-          }
-          const {output: limitedStr, on_break: onBreak} = getFirstNChars(cpcp, len);
-          ct.innerText = limitedStr + (onBreak ? '...' : '');
-          const img_out = entry_output.querySelector('img');
-          if (img_out) {
-            const img_in = content_tree.querySelector('img');
-            if (img_in) {
-              const img_src = img_in.getAttribute('src');
-              if (img_src) {
-                img_out.setAttribute('src', img_src);
+            const { output: limitedStr, on_break: onBreak } = getFirstNChars(cpcp, len);
+            ct.innerText = limitedStr + (onBreak ? '...' : '');
+            const img_out = entry_output.querySelector('img');
+            if (img_out) {
+              const img_in = content_tree.querySelector('img');
+              if (img_in) {
+                const img_src = img_in.getAttribute('src');
+                if (img_src) {
+                  img_out.setAttribute('src', img_src);
+                }
               }
             }
           }
         }
       }
+      const it = entry_output.querySelector('.found-in');
+      if (it) {
+        it.innerText += items[index];
+      }
+      search_result_entries.append(entry_output);
     }
-    const it = entry_output.querySelector('.found-in');
-    if (it) {
-      it.innerText += items[index];
-    }
-    search_result_entries.append(entry_output);
+    return search_result_container;
   }
-  return search_result_container;
+
+  /**
+   * @returns {boolean}
+   */
+  search() {
+    if (!this.fetch_data) 
+      throw Error("'Cause fetch_data is null, exiting search()..");
+    if (!this.search_result_template) 
+      throw Error(`!No search result template`);
+    if (!this.search_text) 
+      throw Error(`!No search text`);
+    const queryWord = this.search_text.value;
+    if (!queryWord || queryWord.length <= 0) {
+      console.log("No search_text.value or search_text.length <= 0 !");
+      return false;
+    }
+    // let search_result = `FetchData from ${fetch_path} with ${queryWord}`;
+    this.fetch_data.then(document => {
+      const { entries, items } = this.analyzeData(document, queryWord);
+      if (entries.length <= 0) {
+        console.log("entries.length is zero.");
+      }
+      while (this.search_result_template.firstChild) {
+        this.search_result_template.firstChild.remove();
+      }
+      const search_result = this.makeSearchResultFromTemplates(entries, items);
+      if (search_result) {
+        this.search_result_template.append(search_result);
+      }
+      // search_result_template.innerHTML = search_result;
+      // Event.preventDefault();
+    })
+    return true;
+  }
 }
+
+const search = new Search();
 
 /**
  * 
@@ -192,12 +296,12 @@ function getFirstNChars(src, n) {
       lc = c;
     }
     out += c;
-    if(++i >= n) {
+    if (++i >= n) {
       on_break = true;
       break;
     }
   }
-  return {output: out, on_break: on_break};
+  return { output: out, on_break: on_break };
 }
 
 /**
@@ -215,60 +319,4 @@ function startsFromDate(url) {
       return dt;
   }
   return '';
-}
-
-const search_result_str = "#search-result";
-const searchResult = document.querySelector(search_result_str);
-if (!searchResult) {
-  console.error(`${search_result_str} is not found!`);
-}
-
-const fetch_path = '/search.xml';
-const fetch_data = fetchData(fetch_path);
-if (!fetch_data) {
-  console.error("fetch_data promise is null!");
-}
-
-const search_text_tag = "input#search-text";
-const search_text = document.querySelector(search_text_tag);
-if (!search_text) {
-  console.error(search_text_tag + " is not found.");
-}
-
-/**
- * 
- * @returns {boolean}
- */
-function search() {
-  if (!fetch_data) {
-    throw "'Cause fetch_data is null, exiting search()..";
-  }
-  if (!searchResult) {
-    throw search_result_str + " is not found!";
-  }
-  if (!search_text) {
-    throw search_text_tag + " is not found.";
-  }
-  const queryWord = search_text.value;
-  if (!queryWord || queryWord.length <= 0) {
-    console.log("No search_text.value or search_text.length <= 0 !");
-    return false;
-  }
-  // let search_result = `FetchData from ${fetch_path} with ${queryWord}`;
-  fetch_data.then(document => {
-    const {entries, items} = analyzeData(document, queryWord); 
-    if (entries.length <= 0) {
-      console.log("entries.length is zero.");
-    }
-    while (searchResult.firstChild) {
-      searchResult.firstChild.remove();
-    }
-    const search_result = makeSearchResultFromTemplates(entries, items);
-    if (search_result) {
-      searchResult.append(search_result);
-    }
-    // searchResult.innerHTML = search_result;
-    // Event.preventDefault();
-  })
-  return true;
 }

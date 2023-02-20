@@ -1,3 +1,5 @@
+- var submit_search = "submit-search"
+
 header.included
   hgroup.title.subtitle
     h1= config.title
@@ -13,7 +15,7 @@ header.included
     label(for="check-ignore-case") Ignore case
     input#check-ignore-accents(type="checkbox" checked)
     label(for="check-ignore-accents") Ignore accents
-    button#submit-search Search
+    button(id=submit_search) Search
   div#search-result
 
 template#search-result-container
@@ -29,6 +31,7 @@ template#search-result-entry
     p(data-length=200).content
     img.thumbnail
 
+script(src="/js/search.js" defer)
 // /search/?search=
 //  form.search
 //    input(type="text" id="search-text")
