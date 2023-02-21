@@ -69,8 +69,6 @@ class Search {
    * @returns {Object< Array<Element>, Array<string> >}
    */
   analyzeData(document, query_str, ignore_case, ignore_accents) {
-    // const ignore_accents = (!this.ignore_accents_checkbox.checked) ? false : true;
-    // const ignore_case = (!this.ignore_case_checkbox.checked) ? false : true;
     const entries = document.getElementsByTagName('entry');
     const matchEntries = [];
     const matchItems = [];
@@ -80,17 +78,27 @@ class Search {
       query.replace(combining_chars_regex, '');
     }
     const query_regex = RegExp(query, ignore_case ? 'ui' : 'u');
-    // const test_children = [0, 2];
-    const test_items = ['title', 'content'];
+    const test_items = {'title':'text', 'content':'html'};
     for (let entry of entries) {
-      let match = false;
       let content = '';
-      let item = '';
-      for (item of test_items) { // for (let cn of test_children) {
-        const element = entry.querySelector(item);
-        if (element) {
-          let text = element.textContent?.replace(/<[^>]*>/gu, ' ');
-          if (text) {
+      TYPE_LOOP: for (const [item, type] of test_items.entries()) { 
+        let match = false;
+        let text = entry.querySelector(item)?.textContent;
+        if (text) {
+          debugger;
+          const texts = [];
+          if (type == 'html') {
+            const content_tree = new DOMParser().parseFromString(text, "text/html");
+            if (content_tree) {
+              walkTextNodes(content_tree, space_filter, texts);
+            }
+          }
+          else {
+            const without_space = text.replace(/\s+/ug, '');
+            if (without_space)
+              texts.push(text);
+          }
+          for (text of texts) {
             content = text.normalize('NFKD');
             if (ignore_accents)
               content.replace(combining_chars_regex, "");
@@ -100,10 +108,12 @@ class Search {
             }
           }
         }
+        if (match) {
+          matchEntries.push(entry);
+          matchItems.push(item);
+          break TYPE_LOOP;
+        }
       }
-      if (match)
-        matchEntries.push(entry);
-      matchItems.push(item);
     }
     return { 'entries': matchEntries, 'items': matchItems };
   }
@@ -185,7 +195,6 @@ class Search {
  * @returns {boolean}
  */
   search_func(queryWord, ignore_case = true, ignore_accents = true) {
-    // let search_result = `FetchData from ${fetch_path} with ${queryWord}`;
     this.fetch_data.then(document => {
       const { entries, items } = this.analyzeData(document, queryWord, ignore_case, ignore_accents);
       if (entries.length <= 0) {
@@ -198,8 +207,6 @@ class Search {
       if (search_result) {
         this.search_result_template.append(search_result);
       }
-      // search_result_template.innerHTML = search_result;
-      // Event.preventDefault();
     })
     return true;
   }
@@ -306,4 +313,45 @@ function startsFromDate(url) {
       return dt;
   }
   return '';
+}
+
+/**
+ * dirask: JavaScript - iterate text nodes only in DOM tree
+ * @param {Document} node 
+ * @param {({data: string}) => boolean} filter 
+ * @param {Array<string>} result
+ * @returns {number}
+ */
+function walkTextNodes(node, filter, result) {
+  let count = 0;
+  const execute = node => {
+      let child = node.firstChild;
+      while (child) {
+          switch (child.nodeType) {
+              case Node.TEXT_NODE:
+                  if (filter(child)) {
+                      result.push(child);
+                      count++;
+                  }
+                  break;
+              case Node.ELEMENT_NODE:
+                  execute(child);
+                  break;
+          }
+          child = child.nextSibling;
+      }
+  }
+  if (node) {
+      execute(node);
+  }
+  return count;
+}
+
+/**
+ * this filter removes text nodes that contains white characters only
+ * @param {{data: string}} node 
+ * @returns {boolean}
+ */
+function space_filter(node) {
+  return /^(\s|\n)+$/gi.test(node.data) ? false : true;
 }
