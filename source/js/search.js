@@ -37,15 +37,6 @@ class Search {
     if (!this.fetch_data)
       throw Error('!No fetch data.');
 
-    this.submit_search_button = document.querySelector("button#" + submit_search);
-    if (this.submit_search_button) {
-      this.submit_search_button.addEventListener("click", function (event) {
-        this.search_func();
-        event.preventDefault();
-      });
-    }
-    else
-      throw Error('!No button#' + submit_search);
     this.search_result_container_template = document.querySelector("template#" + search_result_container);
     if (!this.search_result_container_template)
       throw Error('!No template#' + search_result_container);
@@ -85,7 +76,6 @@ class Search {
         let match = false;
         let text = entry.querySelector(item)?.textContent;
         if (text) {
-          debugger;
           const texts = [];
           if (type == 'html') {
             const content_tree = new DOMParser().parseFromString(text, "text/html");
@@ -213,7 +203,7 @@ class Search {
 }
 
 class SearchInput {
-  /** @typedef {(input: string, ignore_case: boolean|null, ignore_accents: boolean|null) => boolean} Callback
+  /** @typedef {(input: string, ignore_case: boolean, ignore_accents: boolean) => boolean} Callback
    * 
    */
   static combining_chars_regex = /\p{Mark}/gu;
@@ -236,7 +226,6 @@ class SearchInput {
         let queryWord = this.search_text.value;
         if (!queryWord || queryWord.length <= 0) {
           console.log("No search_text.value or search_text.length <= 0 !");
-          return false;
         }
         else {
           queryWord = queryWord.normalize('NFKD');
@@ -355,3 +344,6 @@ function walkTextNodes(node, filter, result) {
 function space_filter(node) {
   return /^(\s|\n)+$/gi.test(node.data) ? false : true;
 }
+
+const search = new Search();
+const searchInput = new SearchInput(search.search_func);
