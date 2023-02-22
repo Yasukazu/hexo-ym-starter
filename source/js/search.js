@@ -27,28 +27,23 @@ function fetchData(fetchUrl = fetch_path) {
 class Search {
   /**
    * check container element of #search
-   * @param {string} submit_search 
    * @param {string} search_result_container 
    * @param {string} search_result 
    */
-  constructor(fetchdata_promise = fetchData(), submit_search = "submit-search", search_result_container = "search-result-container", search_result = "search-result-entry", search_text = "search-text") {
-
+  constructor(fetchdata_promise = fetchData(), search_result_output_selector = "search-result-output-selector",  search_result_container_template_selector = "template#search-result-container", search_result_entry_template_selector = "template#search-result-entry", search_result_container_entries_selector = ".entries") {
     this.fetch_data = fetchdata_promise;
     if (!this.fetch_data)
-      throw Error('!No fetch data.');
-
-    this.search_result_container_template = document.querySelector("template#" + search_result_container);
+      throw Error('!No fetch data promise!');
+    this.search_result_output = document.querySelector(search_result_output_selector);
+    if (!this.search_result_output)
+      Error(`No ${search_result_output_selector} !`);
+    this.search_result_container_template = document.querySelector(search_result_container_template_selector);
     if (!this.search_result_container_template)
-      throw Error('!No template#' + search_result_container);
-    this.search_result_template = document.querySelector("template#" + search_result);
-    if (!this.search_result_template)
-      throw Error('!No template#' + search_result);
-    this.fetch_data = fetchdata_promise;
-    if (!this.fetch_data)
-      throw Error("!No fetch_data promise.");
-    this.search_text = document.querySelector("input#" + search_text);
-    if (!search_text)
-      throw Error('!No input#' + search_text);
+      throw Error(`!No ${search_result_container_template_selector}!`);
+    this.search_result_entry_template = document.querySelector(search_result_entry_template_selector);
+    if (!this.search_result_entry_template)
+      throw Error('!No search entry template!');
+    this.search_result_container_entries_selector = search_result_container_entries_selector;
   }
 
   /**
@@ -72,7 +67,7 @@ class Search {
     const test_items = {'title':'text', 'content':'html'};
     for (let entry of entries) {
       let content = '';
-      TYPE_LOOP: for (const [item, type] of test_items.entries()) { 
+      for (const [item, type] of test_items.entries()) { 
         let match = false;
         let text = entry.querySelector(item)?.textContent;
         if (text) {
@@ -101,7 +96,7 @@ class Search {
         if (match) {
           matchEntries.push(entry);
           matchItems.push(item);
-          break TYPE_LOOP;
+          break;
         }
       }
     }
@@ -116,18 +111,24 @@ class Search {
    */
   makeSearchResultFromTemplates(entries, items) {
     const search_result_container = document.importNode(this.search_result_container_template.content, true);
-    if (!search_result_container) throw Error(`Failed to get a search_result_container from its template!`);
-    const search_result_entries = search_result_container.querySelector('.entries');
-    if (!search_result_entries) throw Error(`An element with entries class is not found in search result container template!`);
+    if (!search_result_container) 
+      throw Error(`Failed to build a search_result_container from its template!`);
+    const search_result_entries = search_result_container.querySelector(this.search_result_container_entries_selector);
+    if (!search_result_entries) 
+      throw Error(`An element with entries selector(${this.search_result_container_entries_selector}) is not found in search result container template!`);
     for (const [index, entry] of entries.entries()) {
-      const entry_output = document.importNode(this.search_result_template.content, true);
-      if (!entry_output) throw Error(`!Failed to import node from search_result_template`);
+      const entry_output = document.importNode(this.search_result_entry_template.content, true);
+      if (!entry_output)
+        throw Error("Failed to import a node from the 'search result entry template'!");
       const title = entry.querySelector('title')?.textContent; // children[0]
-      if (!title) throw Error("No title in entry!");
+      if (!title)
+        throw Error("No title in entry!");
       const url = entry.querySelector('url')?.textContent; // 2
-      if (!url) throw Error("No 'url' in entry!");
+      if (!url)
+        throw Error("No 'url' in entry!");
       const ar = entry_output.querySelector('a.title');
-      if (!ar) throw Error("No 'a' in template!");
+      if (!ar)
+        throw Error("No 'a' in template!");
       ar.href = url;
       ar.innerText = title;
       const date_str = startsFromDate(url);
@@ -177,29 +178,30 @@ class Search {
     return search_result_container;
   }
 
-
   /**
  * @param {string} queryWord
  * @param {boolean} ignore_case
  * @param {boolean} ignore_accents
  * @returns {boolean}
  */
-  search_func(queryWord, ignore_case = true, ignore_accents = true) {
+  exec_search(queryWord, ignore_case = true, ignore_accents = true) {
     this.fetch_data.then(document => {
       const { entries, items } = this.analyzeData(document, queryWord, ignore_case, ignore_accents);
-      if (entries.length <= 0) {
-        console.log("entries.length is zero.");
+      if (entries.length > 0) {
+        while (this.search_result_output?.firstChild) {
+          this.search_result_output?.firstChild.remove();
+        }
+        const search_result = this.makeSearchResultFromTemplates(entries, items);
+        if (search_result) {
+          this.search_result_output?.append(search_result);
+        }
       }
-      while (this.search_result_template.firstChild) {
-        this.search_result_template.firstChild.remove();
-      }
-      const search_result = this.makeSearchResultFromTemplates(entries, items);
-      if (search_result) {
-        this.search_result_template.append(search_result);
-      }
+    }, reason => {
+        throw Error(`exec_search failed. reason:${reason}`);
     })
     return true;
   }
+
 }
 
 class SearchInput {
@@ -210,36 +212,16 @@ class SearchInput {
   /**
    * check container element of #search
    * @param {Callback} callback
-   * @param {string} submit_search 
    * @param {string} ignore_case 
    * @param {string} ignore_accents 
    * @param {string} search_text 
    */
-  constructor(callback, submit_search = "submit-search", ignore_case = "ignore-case", ignore_accents = "ignore-accents", search_text = "search-text") {
+  constructor(callback = new Search().exec_search, ignore_case = "ignore-case", ignore_accents = "ignore-accents", search_text = "search-text") {
     /**
      * @type {Callback|null}
      */
     this.callback = callback;
-    this.submit_search_button = document.querySelector("button#" + submit_search);
-    if (this.submit_search_button) {
-      this.submit_search_button.addEventListener("click", function (event) {
-        let queryWord = this.search_text.value;
-        if (!queryWord || queryWord.length <= 0) {
-          console.log("No search_text.value or search_text.length <= 0 !");
-        }
-        else {
-          queryWord = queryWord.normalize('NFKD');
-          if (ignore_accents.checked) {
-            queryWord.replace(SearchInput.combining_chars_regex, '');
-          }
-        }
-        this.callback(queryWord, ignore_case?.checked, ignore_accents?.checked);
 
-        event.preventDefault();
-      });
-    }
-    else
-      throw Error('!No button#' + submit_search);
     this.ignore_accents = document.querySelector("input#" + ignore_accents);
     if (!this.ignore_accents)
       throw Error('!No input#' + ignore_accents);
@@ -312,7 +294,7 @@ function startsFromDate(url) {
  * @returns {number}
  */
 function walkTextNodes(node, filter, result) {
-  let count = 0;
+  let count = 0; // better inside closure
   const execute = node => {
       let child = node.firstChild;
       while (child) {
@@ -345,5 +327,26 @@ function space_filter(node) {
   return /^(\s|\n)+$/gi.test(node.data) ? false : true;
 }
 
-const search = new Search();
-const searchInput = new SearchInput(search.search_func);
+// const search = new Search();
+// const searchInput = new SearchInput(search.search_func);
+
+const ignore_accents_selector = "#ignore-accents";
+const ignore_case_selector = "#ignore-case";
+const search_text_selector = "input#search-text";
+const submit_search_selector = "button#submit-search";
+const submit_search_button = document.querySelector(submit_search_selector);
+const search_text = document.querySelector(search_text_selector);
+if (submit_search_button && search_text?.value) {
+  submit_search_button.addEventListener("click", (event) => {
+    let queryWord = search_text.value;
+    if (queryWord) {
+      const ignore_case_checked = document.querySelector(ignore_case_selector)?.checked ? true : false;
+      const ignore_accents_checked = document.querySelector(ignore_accents_selector)?.checked ? true : false;
+      const search = new Search();
+      search.exec_search(queryWord, ignore_case_checked, ignore_accents_checked);
+    }
+    event.preventDefault();
+  });
+}
+else
+  throw Error(`!No ${submit_search_selector}`);

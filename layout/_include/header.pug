@@ -1,5 +1,11 @@
 - const submit_search = "submit-search"
 - const search_text = "search-text"
+- const ignore_case = "ignore-case"
+- const ignore_accents = "ignore-accents"
+- const search_input = "search-input"
+- const search_result_output = "search-result-output"
+- const search_result_container = "search_result_container"
+- const search_result_entry = "search_result_entry"
 
 header.included
   hgroup.title.subtitle
@@ -9,23 +15,23 @@ header.included
     li.home: a(href=url_for("/")) Home
     li.archives: a(href=url_for("/archives/")) Posts
     li.about: a(href=url_for("/about/")) About
-  form#search-container
-    label(for="search-text") Enter search text:
+  div(id=search_input)
+    label(for=search_text) Enter search text:
     input(id=search_text type="text" name="search-text")
-    input#ignore-case(type="checkbox" checked)
-    label(for="ignore-case") Ignore case
-    input#ignore-accents(type="checkbox" checked)
-    label(for="ignore-accents") Ignore accents
+    input(id=ignore_case type="checkbox" checked)
+    label(for=ignore_case) Ignore case
+    input(id=ignore_accents type="checkbox" checked)
+    label(for=ignore_accents) Ignore accents
     button(id=submit_search) Search
-  div#search-result
+  div(id=search_result_output)
 
-template#search-result-container
-  .search-result-container
+template(id=search_result_container)
+  div(class=search_result_container)
     h2 Search result
     ul.entries
 
-template#search-result-entry
-  li.search-result-entry
+template(id=search_result_entry)
+  li(class=search_result_entry)
     a.title
     time.date
     small.found-in Found in: 
