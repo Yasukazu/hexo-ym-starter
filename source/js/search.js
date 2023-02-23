@@ -1,4 +1,5 @@
 //@ts-check
+export {Search};
 
 const fetch_path = '/search.xml';
 /**
@@ -27,14 +28,15 @@ function fetchData(fetchUrl = fetch_path) {
 class Search {
   /**
    * check container element of #search
+   * @param {Element} search_result_output 
    * @param {string} search_result_container 
    * @param {string} search_result 
    */
-  constructor(fetchdata_promise = fetchData(), search_result_output_selector = "search-result-output-selector",  search_result_container_template_selector = "template#search-result-container", search_result_entry_template_selector = "template#search-result-entry", search_result_container_entries_selector = ".entries") {
+  constructor(fetchdata_promise = fetchData(), {search_result_output,  search_result_container_template_selector = "template#search-result-container", search_result_entry_template_selector = "template#search-result-entry", search_result_container_entries_selector = ".entries"}={}) {
     this.fetch_data = fetchdata_promise;
     if (!this.fetch_data)
       throw Error('!No fetch data promise!');
-    this.search_result_output = document.querySelector(search_result_output_selector);
+    this.search_result_output = search_result_output
     if (!this.search_result_output)
       Error(`No ${search_result_output_selector} !`);
     this.search_result_container_template = document.querySelector(search_result_container_template_selector);
@@ -52,12 +54,14 @@ class Search {
    * @param {string} query_str // Regex expression
    * @param {boolean} ignore_case
    * @param {boolean} ignore_accents
-   * @returns {Object< Array<Element>, Array<string> >}
+   * @returns {({Array<Element>, Array<string>, Array<number>, Array<string>})}
    */
   analyzeData(document, query_str, ignore_case, ignore_accents) {
     const entries = document.getElementsByTagName('entry');
     const matchEntries = [];
     const matchItems = [];
+    const matchPoses = [];
+    const matchTexts = []
     const query = query_str.normalize('NFKD');
     const combining_chars_regex = ignore_accents ? /\p{Mark}/gu : '';
     if (ignore_accents) {
@@ -68,7 +72,7 @@ class Search {
     for (let entry of entries) {
       let content = '';
       for (const [item, type] of test_items.entries()) { 
-        let match = false;
+        let match = [];
         let text = entry.querySelector(item)?.textContent;
         if (text) {
           const texts = [];
@@ -83,24 +87,24 @@ class Search {
             if (without_space)
               texts.push(text);
           }
-          for (text of texts) {
+          for (const [i, text] of texts.entries()) {
             content = text.normalize('NFKD');
             if (ignore_accents)
               content.replace(combining_chars_regex, "");
             if (content && query_regex.test(content)) {
-              match = true;
-              break;
+              match.push(i);
             }
           }
-        }
-        if (match) {
-          matchEntries.push(entry);
-          matchItems.push(item);
-          break;
+          if (match.length > 0) {
+            matchEntries.push(entry);
+            matchItems.push(item);
+            matchPoses.push(match);
+            matchTexts.push(texts);
+          }
         }
       }
     }
-    return { 'entries': matchEntries, 'items': matchItems };
+    return { 'entries': matchEntries, 'items': matchItems, 'texts': matchTexts, 'match-poses': matchPoses };
   }
 
   /**
@@ -291,10 +295,9 @@ function startsFromDate(url) {
  * @param {Document} node 
  * @param {({data: string}) => boolean} filter 
  * @param {Array<string>} result
- * @returns {number}
+ * @returns {Array<string>}
  */
-function walkTextNodes(node, filter, result) {
-  let count = 0; // better inside closure
+function walkTextNodes(node, filter, result = []) {
   const execute = node => {
       let child = node.firstChild;
       while (child) {
@@ -302,7 +305,6 @@ function walkTextNodes(node, filter, result) {
               case Node.TEXT_NODE:
                   if (filter(child)) {
                       result.push(child);
-                      count++;
                   }
                   break;
               case Node.ELEMENT_NODE:
@@ -315,7 +317,7 @@ function walkTextNodes(node, filter, result) {
   if (node) {
       execute(node);
   }
-  return count;
+  return result;
 }
 
 /**
@@ -326,27 +328,3 @@ function walkTextNodes(node, filter, result) {
 function space_filter(node) {
   return /^(\s|\n)+$/gi.test(node.data) ? false : true;
 }
-
-// const search = new Search();
-// const searchInput = new SearchInput(search.search_func);
-
-const ignore_accents_selector = "#ignore-accents";
-const ignore_case_selector = "#ignore-case";
-const search_text_selector = "input#search-text";
-const submit_search_selector = "button#submit-search";
-const submit_search_button = document.querySelector(submit_search_selector);
-const search_text = document.querySelector(search_text_selector);
-if (submit_search_button && search_text?.value) {
-  submit_search_button.addEventListener("click", (event) => {
-    let queryWord = search_text.value;
-    if (queryWord) {
-      const ignore_case_checked = document.querySelector(ignore_case_selector)?.checked ? true : false;
-      const ignore_accents_checked = document.querySelector(ignore_accents_selector)?.checked ? true : false;
-      const search = new Search();
-      search.exec_search(queryWord, ignore_case_checked, ignore_accents_checked);
-    }
-    event.preventDefault();
-  });
-}
-else
-  throw Error(`!No ${submit_search_selector}`);

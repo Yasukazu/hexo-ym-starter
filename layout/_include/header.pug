@@ -32,13 +32,13 @@ template(id=search_result_container)
 
 template(id=search_result_entry)
   li(class=search_result_entry)
-    a.title
-    time.date
+    a.title    time.date
     small.found-in Found in: 
     p(data-length=200).content
     img.thumbnail
 
-script(src="/js/search.js")
+script(type='module' src="/js/search.js")
+script(type='module' src="/js/search-input.js")
 
 // /search/?search=
 //  form.search
