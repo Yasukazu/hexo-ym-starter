@@ -56,7 +56,7 @@ class Search {
    * @param {boolean} ignore_accents
    * @returns {({Array<Element>, Array<string>, Array<number>, Array<string>})}
    */
-  analyzeData(document, query_str, ignore_case, ignore_accents) {
+  *analyzeData(document, query_str, ignore_case, ignore_accents) {
     const entries = document.getElementsByTagName('entry');
     const matchEntries = [];
     const matchItems = [];
@@ -83,9 +83,10 @@ class Search {
             }
           }
           else {
-            const without_space = text.replace(/\s+/ug, '');
-            if (without_space)
-              texts.push(text);
+            if (!text)
+              continue;
+            else
+              text = text.replace(/\s+/ug, ' ');
           }
           for (const [i, text] of texts.entries()) {
             content = text.normalize('NFKD');
@@ -189,8 +190,8 @@ class Search {
  * @returns {boolean}
  */
   exec_search(queryWord, ignore_case = true, ignore_accents = true) {
-    this.fetch_data.then(document => {
-      const { entries, items } = this.analyzeData(document, queryWord, ignore_case, ignore_accents);
+    this.fetch_data.then(xml => {
+      const { entries, items } = this.analyzeData(xml, queryWord, ignore_case, ignore_accents);
       if (entries.length > 0) {
         while (this.search_result_output?.firstChild) {
           this.search_result_output?.firstChild.remove();
