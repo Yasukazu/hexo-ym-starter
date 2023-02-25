@@ -24,12 +24,10 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
     const filter = new SearchFilter(query, {ignore_case, ignore_accents});
     const test_items = {'title':'text', 'content':'html'};
     for (let entry of entries) {
-      let content = '';
-      for (const [item, type] of test_items.entries()) { 
-        let indices = [];
+      for (const [item, type] of Object.entries(test_items)) { 
+        debugger;
         let text = entry.querySelector(item)?.textContent;
         if (text) {
-          const texts = [];
           if (type == 'html') {
             const content_tree = new DOMParser().parseFromString(text, "text/html");
             if (!content_tree) {
