@@ -1,5 +1,6 @@
 //@ts-check
 export {Search};
+import {SearchFilter, walkTextNodes} from "./walkTextNodes.js";
 
 const fetch_path = '/search.xml';
 /**
@@ -52,69 +53,53 @@ class Search {
    * Picks up query-matching entries
    * @param {Document} document // XML
    * @param {string} query_str // Regex expression
-   * @param {boolean} ignore_case
-   * @param {boolean} ignore_accents
-   * @returns {({Array<Element>, Array<string>, Array<number>, Array<string>})}
+   * @param {{ignore_case: boolean, ignore_accents: boolean}}
+   * @yields {indices:{Array<number>}, buffer:{string}}
    */
-  *analyzeData(document, query_str, ignore_case, ignore_accents) {
+   // @yields {indices: Array<number>, buffer: string}
+  *analyzeData(document, query_str, {ignore_case = true, ignore_accents = true}) {
     const entries = document.getElementsByTagName('entry');
     const matchEntries = [];
     const matchItems = [];
     const matchPoses = [];
     const matchTexts = []
-    const query = query_str.normalize('NFKD');
+    let query = query_str.normalize('NFKD');
     const combining_chars_regex = ignore_accents ? /\p{Mark}/gu : '';
     if (ignore_accents) {
-      query.replace(combining_chars_regex, '');
+      query = query.replace(combining_chars_regex, '');
     }
-    const query_regex = RegExp(query, ignore_case ? 'ui' : 'u');
+    // const query_regex = RegExp(query, ignore_case ? 'ui' : 'u');
+    const filter = new SearchFilter(query, {ignore_case, ignore_accents});
     const test_items = {'title':'text', 'content':'html'};
     for (let entry of entries) {
       let content = '';
       for (const [item, type] of test_items.entries()) { 
-        let match = [];
+        let indices = [];
         let text = entry.querySelector(item)?.textContent;
         if (text) {
           const texts = [];
           if (type == 'html') {
             const content_tree = new DOMParser().parseFromString(text, "text/html");
-            if (content_tree) {
-              walkTextNodes(content_tree, space_filter, texts);
+            if (!content_tree) {
+              throw Error(`Failed to parse from string text/html at entry:${entry.TEXT_NODE}`);
             }
+            yield walkTextNodes(content_tree, filter.filter);
           }
           else {
-            if (!text)
-              continue;
-            else
-              text = text.replace(/\s+/ug, ' ');
-          }
-          for (const [i, text] of texts.entries()) {
-            content = text.normalize('NFKD');
-            if (ignore_accents)
-              content.replace(combining_chars_regex, "");
-            if (content && query_regex.test(content)) {
-              match.push(i);
-            }
-          }
-          if (match.length > 0) {
-            matchEntries.push(entry);
-            matchItems.push(item);
-            matchPoses.push(match);
-            matchTexts.push(texts);
+            let {index, str} = filter.filter(text);
+            yield {indices: [index], buffer: str};
           }
         }
       }
     }
-    return { 'entries': matchEntries, 'items': matchItems, 'texts': matchTexts, 'match-poses': matchPoses };
   }
 
   /**
    * 
-   * @param {Array<Element>} entries
-   * @param {Array<string>} items 
+   * @param {@genarator<{indices: Array<number>, buffer: string}>} analyzer
    * @returns {Element}
    */
-  makeSearchResultFromTemplates(entries, items) {
+  makeSearchResultFromTemplates(analyzer) {
     const search_result_container = document.importNode(this.search_result_container_template.content, true);
     if (!search_result_container) 
       throw Error(`Failed to build a search_result_container from its template!`);
@@ -191,16 +176,19 @@ class Search {
  */
   exec_search(queryWord, ignore_case = true, ignore_accents = true) {
     this.fetch_data.then(xml => {
-      const { entries, items } = this.analyzeData(xml, queryWord, ignore_case, ignore_accents);
-      if (entries.length > 0) {
+      const analyzer = this.analyzeData(xml, queryWord, {ignore_case, ignore_accents});
+      debugger;
+      for (let {indices, buffer} of analyzer) {
+        debugger;
+        console.log(`indices: ${indices}\nbuffer: ${buffer}\n\n`);
+      }
         while (this.search_result_output?.firstChild) {
           this.search_result_output?.firstChild.remove();
         }
-        const search_result = this.makeSearchResultFromTemplates(entries, items);
+        const search_result = this.makeSearchResultFromTemplates(analyzer);
         if (search_result) {
           this.search_result_output?.append(search_result);
         }
-      }
     }, reason => {
         throw Error(`exec_search failed. reason:${reason}`);
     })
@@ -289,43 +277,4 @@ function startsFromDate(url) {
       return dt;
   }
   return '';
-}
-
-/**
- * dirask: JavaScript - iterate text nodes only in DOM tree
- * @param {Document} node 
- * @param {({data: string}) => boolean} filter 
- * @param {Array<string>} result
- * @returns {Array<string>}
- */
-function walkTextNodes(node, filter, result = []) {
-  const execute = node => {
-      let child = node.firstChild;
-      while (child) {
-          switch (child.nodeType) {
-              case Node.TEXT_NODE:
-                  if (filter(child)) {
-                      result.push(child);
-                  }
-                  break;
-              case Node.ELEMENT_NODE:
-                  execute(child);
-                  break;
-          }
-          child = child.nextSibling;
-      }
-  }
-  if (node) {
-      execute(node);
-  }
-  return result;
-}
-
-/**
- * this filter removes text nodes that contains white characters only
- * @param {{data: string}} node 
- * @returns {boolean}
- */
-function space_filter(node) {
-  return /^(\s|\n)+$/gi.test(node.data) ? false : true;
 }

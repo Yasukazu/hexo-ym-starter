@@ -1,3 +1,4 @@
+//@ts-check
 class SearchOutput {
     /**
      * check container element of #search
