@@ -1,0 +1,61 @@
+
+script(type='module' src="/js/analyze-data.js")
+
+- const submit_search_id = "submit-search" // ; type=""}{element: "button", 
+- const search_text_id = "search-text"; // type="text"}{element: "input", 
+- const ignore_case_id = "ignore-case"; // type="checkbox"}{element: "input", 
+- const ignore_accents_id = "ignore-accents"; // type="checkbox"}{element: "input", 
+- const search_input_id = "search-input"; // type=''}{element: "div", 
+- const search_result_output_id = "search-result-output"; // type=''}{element: "div", 
+- const search_result_container_id = "search-result-container"; // type=''}{element: "template", 
+- const search_result_entry_id = "search-result-entry"; // type=''}{element: "template", 
+
+  div(id=search_input_id)
+    label(for=search_text_id) Enter search text:
+    input(id=search_text_id, type="text", name=search_text_id)
+    input(id=ignore_case_id, type="checkbox", checked)
+    label(for=ignore_case_id) Ignore case
+    input(id=ignore_accents_id.id type="checkbox" checked)
+    label(for=ignore_accents_id) Ignore accents
+    button(id=submit_search_id) Search
+  div(id=search_result_output_id)
+
+template(id=search_result_container_id)
+  div(class=search_result_container_id)
+    h2 Search result
+    ul.entries
+
+template(id=search_result_entry_id)
+  li(class=search_result_entry_id)
+    a.title    time.date
+    small.found-in Found in: 
+    p(data-length=200).content
+    img.thumbnail
+
+//- script(type='module' src="/js/search.js")
+//- script(type='module' src="/js/search-input.js")
+
+.script
+  // const search = new Search();
+  // const searchInput = new SearchInput(search.search_func);
+  const fetch_data = fetchData();
+  function search_input_id() {
+    debugger;
+    const submit_search_button = document.getElementById(submit_search_id);
+    const search_text_input = document.getElementById(search_text_id);
+    const search_result_output = document.querySelector(search_result_output_id);
+    if (submit_search_button && search_text_input && search_result_output) {
+      submit_search_button.addEventListener("click", (event) => {
+        let queryWord = search_text_id.value;
+        if (queryWord) {
+          const ignore_case = document.querySelector('#' + ignore_case_id)?.checked ? true : false;
+          const ignore_accents = document.querySelector('#' + ignore_accents_id)?.checked ? true : false;
+          debugger;
+          exec_search(fetch_data, queryWord, {ignore_case, ignore_accents});
+        }
+        event.preventDefault();
+      });
+    }
+    else
+      throw Error(`!No ${submit_search_id}, ${search_text_id} and ${search_result_output_id}`);
+  }

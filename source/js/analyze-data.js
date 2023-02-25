@@ -1,5 +1,6 @@
 //@ts-check
 import {SearchFilter, walkTextNodes} from "./walkTextNodes.js";
+export {exec_search, analyzeData, fetchData};
 
   /**
    * Picks up query-matching entries
@@ -55,6 +56,8 @@ import {SearchFilter, walkTextNodes} from "./walkTextNodes.js";
         fetch_data.then(xml => {
           const analyzer = this.analyzeData(xml, queryWord, {ignore_case, ignore_accents});
           debugger;
+          const next = analyzer.next();
+          console.log(next);
 
         }, reason => {
             throw Error(`exec_search failed. reason:${reason}`);

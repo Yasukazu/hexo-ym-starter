@@ -1,12 +1,3 @@
-- const submit_search = "submit-search"
-- const search_text = "search-text"
-- const ignore_case = "ignore-case"
-- const ignore_accents = "ignore-accents"
-- const search_input = "search-input"
-- const search_result_output = "search-result-output"
-- const search_result_container = "search_result_container"
-- const search_result_entry = "search_result_entry"
-
 header.included
   hgroup.title.subtitle
     h1= config.title
@@ -15,33 +6,3 @@ header.included
     li.home: a(href=url_for("/")) Home
     li.archives: a(href=url_for("/archives/")) Posts
     li.about: a(href=url_for("/about/")) About
-  div(id=search_input)
-    label(for=search_text) Enter search text:
-    input(id=search_text type="text" name="search-text")
-    input(id=ignore_case type="checkbox" checked)
-    label(for=ignore_case) Ignore case
-    input(id=ignore_accents type="checkbox" checked)
-    label(for=ignore_accents) Ignore accents
-    button(id=submit_search) Search
-  div(id=search_result_output)
-
-template(id=search_result_container)
-  div(class=search_result_container)
-    h2 Search result
-    ul.entries
-
-template(id=search_result_entry)
-  li(class=search_result_entry)
-    a.title    time.date
-    small.found-in Found in: 
-    p(data-length=200).content
-    img.thumbnail
-
-script(type='module' src="/js/search.js")
-script(type='module' src="/js/search-input.js")
-
-// /search/?search=
-//  form.search
-//    input(type="text" id="search-text")
-//    button(id="search-submit") In-site Search
-//  div#google_translate_element
