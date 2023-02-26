@@ -11,16 +11,11 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
    */
   function* analyzeData(document, query_str, {ignore_case = true, ignore_accents = true}) {
     const entries = document.getElementsByTagName('entry');
-    const matchEntries = [];
-    const matchItems = [];
-    const matchPoses = [];
-    const matchTexts = []
     let query = query_str.normalize('NFKD');
     const combining_chars_regex = ignore_accents ? /\p{Mark}/gu : '';
     if (ignore_accents) {
       query = query.replace(combining_chars_regex, '');
     }
-    // const query_regex = RegExp(query, ignore_case ? 'ui' : 'u');
     const searchFilter = new SearchFilter(query, {ignore_case, ignore_accents});
     /** @type {(str: string) => IndexText} */
     const filter = searchFilter.filter;
