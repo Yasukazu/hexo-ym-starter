@@ -1,17 +1,80 @@
 export {walkTextNodes, SearchFilter};
 //@ts-check
+
+class IndexText {
+  /**
+   * 
+   * @param {number} index 
+   * @param {string} str 
+   */
+  constructor(index, str) {
+    if (index >= str.length) {
+      throw Error(`index must be less than str.length)index: ${index} , str.length: ${str.length}  !`);
+    }
+    this.index = index;
+    this.str = str;
+    debugger;
+  }
+
+  /**
+   * 
+   * @returns {number}
+   */
+  get index() {
+    return this.index;
+  }
+
+  /**
+   * 
+   * @returns {string}
+   */
+  get text() {
+    return this.str;
+  }
+}
+
+class IndexStringBuffer {
+  constructor() {
+    /** @type {Array<IndexString>} */
+    this.buffer = [];
+  }
+
+  /**
+   * @param {IndexString} indexString
+   */
+  push(indexString) {
+    this.buffer.push(indexString);
+  }
+
+  /**
+   * @returns {{indices: Array<number>, text: {string}}}
+   */
+  get join() {
+    /** @type {Array<number>} */
+    const indices = [];
+    const text = '';
+    for (buff in this.buffer) {
+      if (buff.index >= 0) {
+        indices.push(text.length + buff.index);
+      }
+      text += buff.text + ' ';
+    }
+    text.trim();
+    debugger;
+    return {indices, text};
+  }
+}
+
 /**
  * dirask: JavaScript - iterate text nodes only in DOM tree
  * @param {Node} node 
  * @typedef {({index: number, str: string})} FilterResult
  * @typedef {function(string): FilterResult} Filter 
  * @param {Filter} filter 
- * @returns {{indices: Array<number>, buffer: string}}
+ * @returns {{indices: Array<number>, text: string}}
  */
 function walkTextNodes(node, filter) {
-    let pointer = 0;
-    let buffer = '';
-    const indices = [];
+    const buffer = new IndexStringBuffer();
     /**
      * @param {Node} nod 
      */
@@ -25,15 +88,8 @@ function walkTextNodes(node, filter) {
                       console.error("child.data is empty!");
                       break;
                     }
-                    const {index, text} = filter(data);
-                    if (index >= 0) {
-                      if (!text) {
-                        throw Error(`text is empty!`);
-                      }
-                      indices.push(pointer + index);
-                      buffer += text + ' ';
-                      pointer += text.length + 1;
-                    }
+                    const indexText = filter(data);
+                    buffer.push(indexText);
                     break;
                 case Node.ELEMENT_NODE:
                     execute(child);
@@ -48,7 +104,8 @@ function walkTextNodes(node, filter) {
     else {
         throw Error("No node!");
     }
-    return {indices, buffer};
+    debugger;
+    return buffer.join;
 }
 
 class SearchFilter {
@@ -75,13 +132,11 @@ class SearchFilter {
         console.assert(text, "text became empty after replacing accents!");
       }
       const i = text.search(this.re); 
-      if (i >= 0) {
+      if (i >= 0 && !text) {
         console.assert(text, `text is empty when search found regex: ${this.re}!`)
-        return {index: i, text: text};
       }
-      else {
-        return {index: -1, text: ''};
-      }
+      debugger;
+      return new IndexText(i, text);
     }
   }
 }
