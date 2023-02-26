@@ -7,7 +7,7 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
    * @param {Document} document // XML
    * @param {string} query_str // Regex expression
    * @param {{ignore_case: boolean, ignore_accents: boolean}}
-   * @yields {IndicesText}
+   * @yields {{entry: Element, indicesText: IndicesText}}
    */
   function* analyzeData(document, query_str, {ignore_case = true, ignore_accents = true}) {
     const entries = document.getElementsByTagName('entry');
@@ -21,7 +21,10 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
     const filter = searchFilter.filter;
     const test_items = ['title:text', 'content:html'];
     for (const entry of entries) {
+      let found = false;
       for (const item_type of test_items) { 
+        if (found)
+          break;
         const [item, type] = item_type.split(':');
         const content = entry.querySelector(item)?.textContent;
         if (content) {
@@ -32,15 +35,17 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
             }
             const indicesText = walkTextNodes(content_tree, filter);
             if (indicesText.isValid) {
-              yield indicesText;
+              found = true;
+              yield {entry, indicesText};
             }
           }
           else {
             const indexText = filter(content);
             if (indexText.isValid) {
+              found = true;
               const indicesText = new IndicesText();
               indicesText.push(indexText);
-              yield indicesText;
+              yield {entry, indicesText};
             }
           }
         }
@@ -56,10 +61,13 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
  */
 function exec_search(fetch_data = fetchData(), queryWord, { ignore_case = true, ignore_accents = true }) {
   fetch_data.then(xml => {
-    /** @type {IndicesText} */
-    for (const indicesText of analyzeData(xml, queryWord, { ignore_case, ignore_accents })) {
+    /** @type {{entry: Element, indicesText: IndicesText}} */
+    for (const {entry, indicesText} of analyzeData(xml, queryWord, { ignore_case, ignore_accents })) {
       const {indices, text} = indicesText.join;
-      console.log(`Reached to get analyzeData generator: indices = ${indices}\ntext:\n${text}`);
+      const url = entry.querySelector('url')?.textContent; // 2
+      if (!url)
+        throw Error("No 'url' in entry!");
+      console.log(`Reached to get analyzeData : url = ${url}\n indices = ${indices}\n text: ${text}\n\n`);
     }
   }, reason => {
     throw Error(`exec_search failed. reason:${reason}`);
