@@ -19,7 +19,7 @@ class IndexText {
    * @returns {boolean}
    */
   get isValid() {
-    return index >= 0;
+    return this._index >= 0;
   }
 
   /**
@@ -57,7 +57,7 @@ class IndicesText {
    */
   get isValid() {
     for (let buff of this.buffer) {
-      if (buff.index >= 0) {
+      if (buff.isValid) {
         return true;
       }
     } 
