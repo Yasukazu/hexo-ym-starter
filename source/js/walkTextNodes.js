@@ -1,4 +1,4 @@
-export {walkTextNodes, SearchFilter};
+export {walkTextNodes, SearchFilter, IndexText, IndicesText};
 //@ts-check
 
 class IndexText {
@@ -11,7 +11,7 @@ class IndexText {
     if (index >= str.length) {
       throw Error(`index must be less than str.length)index: ${index} , str.length: ${str.length}  !`);
     }
-    this.index = index;
+    this._index = index;
     this.str = str;
     debugger;
   }
@@ -21,7 +21,7 @@ class IndexText {
    * @returns {number}
    */
   get index() {
-    return this.index;
+    return this._index;
   }
 
   /**
@@ -33,7 +33,7 @@ class IndexText {
   }
 }
 
-class IndexStringBuffer {
+class IndicesText {
   constructor() {
     /** @type {Array<IndexString>} */
     this.buffer = [];
@@ -47,6 +47,23 @@ class IndexStringBuffer {
   }
 
   /**
+   * @returns {Array<number>}
+   */
+  get indices() {
+    /** @type {Array<number>} */
+    const _indices = [];
+    const text = '';
+    for (buff in this.buffer) {
+      if (buff.index >= 0) {
+        _indices.push(text.length + buff.index);
+      }
+      text += buff.text + ' ';
+    }
+    return _indices;
+  }
+
+  /**
+   * returns empty indices if no found text.
    * @returns {{indices: Array<number>, text: {string}}}
    */
   get join() {
@@ -68,8 +85,7 @@ class IndexStringBuffer {
 /**
  * dirask: JavaScript - iterate text nodes only in DOM tree
  * @param {Node} node 
- * @typedef {({index: number, str: string})} FilterResult
- * @typedef {function(string): FilterResult} Filter 
+ * @typedef {function(string): IndexText} Filter 
  * @param {Filter} filter 
  * @returns {{indices: Array<number>, text: string}}
  */
@@ -121,7 +137,7 @@ class SearchFilter {
     this.re = RegExp(query, ignore_case ? 'ui' : 'u');
     /**
     * @param {string} text 
-    * @returns {{index: number, text: string}}
+    * @returns {IndexText}
     */
     this.filter = (text) => {
       console.assert(text, "filter is called for an empty text!");

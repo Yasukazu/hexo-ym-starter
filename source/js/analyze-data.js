@@ -1,5 +1,5 @@
 //@ts-check
-import {SearchFilter, walkTextNodes} from "./walkTextNodes.js";
+import {SearchFilter, walkTextNodes, IndexText, IndicesText} from "./walkTextNodes.js";
 export {exec_search, analyzeData, fetchData, search_input, search_id};
 
   /**
@@ -7,7 +7,7 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
    * @param {Document} document // XML
    * @param {string} query_str // Regex expression
    * @param {{ignore_case: boolean, ignore_accents: boolean}}
-   * @yields {indices:{Array<number>}, buffer:{string}}
+   * @yields {IndicesText}
    */
   function* analyzeData(document, query_str, {ignore_case = true, ignore_accents = true}) {
     const entries = document.getElementsByTagName('entry');
@@ -21,30 +21,32 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
       query = query.replace(combining_chars_regex, '');
     }
     // const query_regex = RegExp(query, ignore_case ? 'ui' : 'u');
-    /** @type {(str: string) => {index: number, str: string}} */
     const searchFilter = new SearchFilter(query, {ignore_case, ignore_accents});
+    /** @type {(str: string) => {IndexText}} */
     const filter = searchFilter.filter;
     const test_items = {'title':'text', 'content':'html'};
     for (let entry of entries) {
       for (const [item, type] of Object.entries(test_items)) { 
-        let text = entry.querySelector(item)?.textContent;
-        if (text) {
+        let content = entry.querySelector(item)?.textContent;
+        if (content) {
           if (type == 'html') {
-            const content_tree = new DOMParser().parseFromString(text, "text/html");
+            const content_tree = new DOMParser().parseFromString(content, "text/html");
             if (!content_tree) {
               throw Error(`Failed to parse from string text/html at entry:${entry.TEXT_NODE}`);
             }
-            let {indices, buffer} = walkTextNodes(content_tree, filter);
-            if (indices.length > 0) {
+            const indicesText = walkTextNodes(content_tree, filter);
+            if (indicesText.indices.length > 0) {
               debugger;
-              yield {indices, buffer};
+              yield indicesText;
             }
           }
           else {
-            let {index, str} = filter(text);
-            if (index >= 0) {
+            let indexText = filter(content);
+            if (indexText.index >= 0) {
               debugger;
-              yield {indices: [index], buffer: str};
+              const indicesText = new IndicesText();
+              indicesText.push(indexText);
+              yield indicesText;
             }
           }
         }
