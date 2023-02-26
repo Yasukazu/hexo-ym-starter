@@ -21,11 +21,12 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
       query = query.replace(combining_chars_regex, '');
     }
     // const query_regex = RegExp(query, ignore_case ? 'ui' : 'u');
-    const filter = new SearchFilter(query, {ignore_case, ignore_accents});
+    /** @type {(str: string) => {index: number, str: string}} */
+    const searchFilter = new SearchFilter(query, {ignore_case, ignore_accents});
+    const filter = searchFilter.filter;
     const test_items = {'title':'text', 'content':'html'};
     for (let entry of entries) {
       for (const [item, type] of Object.entries(test_items)) { 
-        debugger;
         let text = entry.querySelector(item)?.textContent;
         if (text) {
           if (type == 'html') {
@@ -33,11 +34,18 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
             if (!content_tree) {
               throw Error(`Failed to parse from string text/html at entry:${entry.TEXT_NODE}`);
             }
-            yield walkTextNodes(content_tree, filter.filter);
+            let {indices, buffer} = walkTextNodes(content_tree, filter);
+            if (indices.length > 0) {
+              debugger;
+              yield {indices, buffer};
+            }
           }
           else {
-            let {index, str} = filter.filter(text);
-            yield {indices: [index], buffer: str};
+            let {index, str} = filter(text);
+            if (index >= 0) {
+              debugger;
+              yield {indices: [index], buffer: str};
+            }
           }
         }
       }
@@ -53,10 +61,8 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
 function exec_search(fetch_data = fetchData(), queryWord, { ignore_case = true, ignore_accents = true }) {
   fetch_data.then(xml => {
     const analyzer = analyzeData(xml, queryWord, { ignore_case, ignore_accents });
-    debugger;
     const next = analyzer.next();
     console.log(next);
-
   }, reason => {
     throw Error(`exec_search failed. reason:${reason}`);
   })
