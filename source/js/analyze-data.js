@@ -36,14 +36,12 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
             }
             const indicesText = walkTextNodes(content_tree, filter);
             if (indicesText.indices.length > 0) {
-              debugger;
               yield indicesText;
             }
           }
           else {
             let indexText = filter(content);
             if (indexText.index >= 0) {
-              debugger;
               const indicesText = new IndicesText();
               indicesText.push(indexText);
               yield indicesText;
@@ -64,7 +62,7 @@ function exec_search(fetch_data = fetchData(), queryWord, { ignore_case = true, 
   fetch_data.then(xml => {
     const analyzer = analyzeData(xml, queryWord, { ignore_case, ignore_accents });
     const next = analyzer.next();
-    console.log(next);
+    console.log(`Reached to get analyzer.next: ${next}`);
   }, reason => {
     throw Error(`exec_search failed. reason:${reason}`);
   })
@@ -104,12 +102,10 @@ function search_input(fetch_data = fetchData(), { submit_search_id, search_text_
   const search_text_input = document.getElementById(search_text_id);
   const search_result_output = document.querySelector(search_result_output_id);
   if (submit_search_button && search_text_input && search_result_output) {
-  debugger;
       let queryWord = search_text_input.value;
       if (queryWord) {
         const ignore_case = document.querySelector('#' + ignore_case_id)?.checked ? true : false;
         const ignore_accents = document.querySelector('#' + ignore_accents_id)?.checked ? true : false;
-        debugger;
         exec_search(fetch_data, queryWord, { ignore_case, ignore_accents });
       }
   }

@@ -13,7 +13,6 @@ class IndexText {
     }
     this._index = index;
     this.str = str;
-    debugger;
   }
 
   /**
@@ -53,7 +52,7 @@ class IndicesText {
     /** @type {Array<number>} */
     const _indices = [];
     const text = '';
-    for (buff in this.buffer) {
+    for (let buff of this.buffer) {
       if (buff.index >= 0) {
         _indices.push(text.length + buff.index);
       }
@@ -69,15 +68,14 @@ class IndicesText {
   get join() {
     /** @type {Array<number>} */
     const indices = [];
-    const text = '';
-    for (buff in this.buffer) {
+    let text = '';
+    for (let buff of this.buffer) {
       if (buff.index >= 0) {
         indices.push(text.length + buff.index);
       }
       text += buff.text + ' ';
     }
     text.trim();
-    debugger;
     return {indices, text};
   }
 }
@@ -90,7 +88,7 @@ class IndicesText {
  * @returns {{indices: Array<number>, text: string}}
  */
 function walkTextNodes(node, filter) {
-    const buffer = new IndexStringBuffer();
+    const buffer = new IndicesText();
     /**
      * @param {Node} nod 
      */
@@ -120,7 +118,6 @@ function walkTextNodes(node, filter) {
     else {
         throw Error("No node!");
     }
-    debugger;
     return buffer.join;
 }
 
@@ -142,7 +139,10 @@ class SearchFilter {
     this.filter = (text) => {
       console.assert(text, "filter is called for an empty text!");
       text = text.trim().normalize('NFKD').replace(/[\s\n]+/gu, ' ');
-      console.assert(text, "text became empty after trimming, normalizing and replacing spaces!");
+      if (!text) {
+        console.log("text became empty after trimming, normalizing and replacing spaces.");
+        return new IndexText(-1, '');
+      }
       if (this.ignore_accents) {
         text = text.replace(SearchFilter.combining_chars_regex, '');
         console.assert(text, "text became empty after replacing accents!");
@@ -151,7 +151,6 @@ class SearchFilter {
       if (i >= 0 && !text) {
         console.assert(text, `text is empty when search found regex: ${this.re}!`)
       }
-      debugger;
       return new IndexText(i, text);
     }
   }
