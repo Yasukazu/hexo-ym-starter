@@ -22,12 +22,13 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
     }
     // const query_regex = RegExp(query, ignore_case ? 'ui' : 'u');
     const searchFilter = new SearchFilter(query, {ignore_case, ignore_accents});
-    /** @type {(str: string) => {IndexText}} */
+    /** @type {(str: string) => IndexText} */
     const filter = searchFilter.filter;
-    const test_items = {'title':'text', 'content':'html'};
-    for (let entry of entries) {
-      for (const [item, type] of Object.entries(test_items)) { 
-        let content = entry.querySelector(item)?.textContent;
+    const test_items = ['title:text', 'content:html'];
+    for (const entry of entries) {
+      for (const item_type of test_items) { 
+        const [item, type] = item_type.split(':');
+        const content = entry.querySelector(item)?.textContent;
         if (content) {
           if (type == 'html') {
             const content_tree = new DOMParser().parseFromString(content, "text/html");
@@ -35,13 +36,13 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
               throw Error(`Failed to parse from string text/html at entry:${entry.TEXT_NODE}`);
             }
             const indicesText = walkTextNodes(content_tree, filter);
-            if (indicesText.indices.length > 0) {
+            if (indicesText.isValid) {
               yield indicesText;
             }
           }
           else {
-            let indexText = filter(content);
-            if (indexText.index >= 0) {
+            const indexText = filter(content);
+            if (indexText.isValid) {
               const indicesText = new IndicesText();
               indicesText.push(indexText);
               yield indicesText;
@@ -60,9 +61,11 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
  */
 function exec_search(fetch_data = fetchData(), queryWord, { ignore_case = true, ignore_accents = true }) {
   fetch_data.then(xml => {
-    const analyzer = analyzeData(xml, queryWord, { ignore_case, ignore_accents });
-    const next = analyzer.next();
-    console.log(`Reached to get analyzer.next: ${next}`);
+    /** @type {IndicesText} */
+    for (const indicesText of analyzeData(xml, queryWord, { ignore_case, ignore_accents })) {
+      const {indices, text} = indicesText.join;
+      console.log(`Reached to get analyzeData generator: indices = ${indices}\ntext:\n${text}`);
+    }
   }, reason => {
     throw Error(`exec_search failed. reason:${reason}`);
   })

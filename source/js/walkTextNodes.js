@@ -16,6 +16,13 @@ class IndexText {
   }
 
   /**
+   * @returns {boolean}
+   */
+  get isValid() {
+    return index >= 0;
+  }
+
+  /**
    * 
    * @returns {number}
    */
@@ -46,7 +53,19 @@ class IndicesText {
   }
 
   /**
-   * @returns {Array<number>}
+   * @returns {boolean}
+   */
+  get isValid() {
+    for (let buff of this.buffer) {
+      if (buff.index >= 0) {
+        return true;
+      }
+    } 
+    return false;
+  }
+
+  /**
+   * @returns {{indices: Array<number>, text: string}}
    */
   get indices() {
     /** @type {Array<number>} */
@@ -85,7 +104,7 @@ class IndicesText {
  * @param {Node} node 
  * @typedef {function(string): IndexText} Filter 
  * @param {Filter} filter 
- * @returns {{indices: Array<number>, text: string}}
+ * @returns {IndicesText}
  */
 function walkTextNodes(node, filter) {
     const buffer = new IndicesText();
@@ -118,7 +137,7 @@ function walkTextNodes(node, filter) {
     else {
         throw Error("No node!");
     }
-    return buffer.join;
+    return buffer;
 }
 
 class SearchFilter {
