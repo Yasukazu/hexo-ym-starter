@@ -33,8 +33,9 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
             if (!content_tree) {
               throw Error(`Failed to parse from string text/html at entry:${entry.TEXT_NODE}`);
             }
-            const indicesText = walkTextNodes(content_tree, filter);
+            const {pushedSet, indicesText} = walkTextNodes(content_tree, filter);
             if (indicesText.isValid) {
+              console.assert(pushedSet.size > 0, `pushedSet.size=${pushedSet.size}`) 
               found = true;
               yield {entry, indicesText};
             }

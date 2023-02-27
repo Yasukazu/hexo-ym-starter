@@ -15,14 +15,21 @@ script(type="module").
   if (!input)
     throw Error(`No ${search_text_id}`);
   if (input.value) {
+    console.log(`Input text is set as: "${input.value}"`);
     const ignore_case_element = document.getElementById("#{ignore_case_id}");
-    const ignore_case = ignore_case_element?.checked ? true : false;
+    if (!ignore_case_element)
+      throw Error(`No ${ignore_case_id} !`);
+    const ignore_case = ignore_case_element.checked ? true : false;
+    console.log(`Ignore case is set as: ${ignore_case}`);
     const ignore_accents_element = document.getElementById("#{ignore_accents_id}");
-    const ignore_accents = ignore_accents_element?.checked ? true : false;
+    if (!ignore_accents_element)
+      throw Error(`No ${ignore_accents_id} !`);
+    const ignore_accents = ignore_accents_element.checked ? true : false;
+    console.log(`Ignore accents is set as: ${ignore_accents}`);
     exec_search(fetchData(), input.value, {ignore_case, ignore_accents});
   }
   else
-    console.log(`No input value.`);
+    console.log(`No input text.`);
   }
   const submit_button = document.getElementById("#{submit_search_id}");
   if (!submit_button) {
@@ -30,6 +37,7 @@ script(type="module").
   }
   else {
     submit_button.onclick = search;
+    console.log(`submit_button.onclick is set to function search()`)
   }
   
 
@@ -38,7 +46,7 @@ div(id=search_input_id)
   input(id=search_text_id, type="text", name=search_text_id)
   input(id=ignore_case_id, type="checkbox", checked)
   label(for=ignore_case_id) Ignore case
-  input(id=ignore_accents_id.id type="checkbox" checked)
+  input(id=ignore_accents_id, type="checkbox" checked)
   label(for=ignore_accents_id) Ignore accents
   button(id=submit_search_id, onClick="search()") Search
 div(id=search_result_output_id)

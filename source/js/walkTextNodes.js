@@ -104,14 +104,16 @@ class IndicesText {
  * @param {Node} node 
  * @typedef {function(string): IndexText} Filter 
  * @param {Filter} filter 
- * @returns {IndicesText}
+ * @returns {{pushedSet: Set, indicesText: IndicesText}}
  */
 function walkTextNodes(node, filter) {
     const buffer = new IndicesText();
+    const pushedSet = new Set();
     /**
      * @param {Node} nod 
      */
     const execute = nod => {
+        let pushed = 0;
         let child = nod.firstChild;
         while (child) {
             switch (child.nodeType) {
@@ -123,6 +125,9 @@ function walkTextNodes(node, filter) {
                     }
                     const indexText = filter(data);
                     buffer.push(indexText);
+                    if (indexText.isValid)
+                      pushedSet.add(pushed);
+                    ++pushed;
                     break;
                 case Node.ELEMENT_NODE:
                     execute(child);
@@ -137,7 +142,7 @@ function walkTextNodes(node, filter) {
     else {
         throw Error("No node!");
     }
-    return buffer;
+    return {pushedSet: pushedSet, indicesText: buffer};
 }
 
 class SearchFilter {
@@ -153,11 +158,17 @@ class SearchFilter {
     this.re = RegExp(query, ignore_case ? 'ui' : 'u');
     /**
     * @param {string} text 
-    * @returns {IndexText}
+    * @returns {IndexText|null}
     */
     this.filter = (text) => {
       console.assert(text, "filter is called for an empty text!");
-      text = text.trim().normalize('NFKD').replace(/[\s\n]+/gu, ' ');
+      const org_text = text.slice().trim();
+      text = text.trim().normalize('NFKD');
+      if (text.length != org_text.length) {
+        console.log(`text length changed by normalize.`);
+      }
+      text = text.replace(/[\s\n]+/gu, ' ');
+      const nfkcText = org_text.trim().normalize('NFKC').replace(/[\s\n]+/gu, ' ');
       if (!text) {
         console.log("text became empty after trimming, normalizing and replacing spaces.");
         return new IndexText(-1, '');
@@ -165,12 +176,10 @@ class SearchFilter {
       if (this.ignore_accents) {
         text = text.replace(SearchFilter.combining_chars_regex, '');
         console.assert(text, "text became empty after replacing accents!");
+        console.assert(text.length == nfkcText.length, "Search text length changed by normalize and replacing accents.")
       }
       const i = text.search(this.re); 
-      if (i >= 0 && !text) {
-        console.assert(text, `text is empty when search found regex: ${this.re}!`)
-      }
-      return new IndexText(i, text);
+      return new IndexText(i, nfkcText);
     }
   }
 }
