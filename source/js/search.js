@@ -1,5 +1,5 @@
 //@ts-check
-export {Search};
+export {Search, startsFromDate};
 import {SearchFilter, walkTextNodes} from "./walkTextNodes.js";
 
 const fetch_path = '/search.xml';

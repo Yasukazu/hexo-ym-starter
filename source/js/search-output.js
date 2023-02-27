@@ -1,4 +1,7 @@
 //@ts-check
+import { startsFromDate } from "./search";
+export {SearchOutput};
+
 class SearchOutput {
     /**
      * check container element of #search
@@ -44,27 +47,23 @@ class SearchOutput {
   }
 
   /**
-   * @param { {url: string, text: string, item: string } }
+   * @param { {url: string, title: string, text: string, item: string } }
    */
-  addSearchResultFromUrlAndText({url, text, item}) { // entries, items) {
+  addSearchResultFromUrlAndText({url, title, text, item}) { // entries, items) {
     if (!this.search_result_container) 
       throw Error(`No built search_result_container !`);
-      const title = entry.querySelector('title')?.textContent; // children[0]
-      if (!title)
-        throw Error("No title in entry!");
-      const url = entry.querySelector('url')?.textContent; // 2
-      if (!url)
-        throw Error("No 'url' in entry!");
-      const ar = entry_output.querySelector('a.title');
-      if (!ar)
-        throw Error("No 'a' in template!");
-      ar.href = url;
-      ar.innerText = title;
+    const entry_output = document.importNode(this.search_result_entry_template.content);
+    const ar = entry_output.querySelector('a.title');
+    if (!ar)
+      throw Error("No 'a' in template!");
+    ar.href = url;
+    ar.innerText = title;
       const date_str = startsFromDate(url);
       if (date_str) {
         const dt = entry_output.querySelector('.date');
         if (dt) {
           dt.innerText = date_str;
+          console.debug(`Output date_str: ${date_str}`);
         }
       }
       const ct = entry_output.querySelector('.content');
@@ -98,6 +97,8 @@ class SearchOutput {
           }
         }
       }
+      else
+        console.error(`No entry output '.content'`);
       const it = entry_output.querySelector('.found-in');
       if (it) {
         it.innerText += items[index];

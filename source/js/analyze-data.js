@@ -22,6 +22,9 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
     const test_items = ['title:text', 'content:html'];
     for (const entry of entries) {
       for (const item_type of test_items) { 
+        /** @type {Set<string>} */
+        const validSet = new Set();
+        /** @type {Map<string, IndicesText>} */
         const itemMap = new Map();
         const [item, type] = item_type.split(':');
         const content = entry.querySelector(item)?.textContent;
@@ -32,26 +35,26 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
               throw Error(`Failed to parse from string text/html at entry:${entry.TEXT_NODE}`);
             }
             const {pushedSet, indicesText} = walkTextNodes(content_tree, filter);
+            itemMap.set(item, indicesText);
             if (indicesText.isValid) {
-            debugger;
-              itemMap.set(item, indicesText);
+              validSet.add(item);
               console.assert(pushedSet.size > 0, `pushedSet.size=${pushedSet.size}`) 
             }
           }
           else {
             const indexText = filter(content);
+            const indicesText = new IndicesText();
+            indicesText.push(indexText);
+            itemMap.set(item, indicesText);
             if (indexText.isValid) {
-              const indicesText = new IndicesText();
-              indicesText.push(indexText);
-            debugger;
-              itemMap.set(item, indicesText);
+              validSet.add(item);
             }
           }
         }
         else {
-          console.error(`No content in ${item} of ${entry} !`);
+          console.info(`No content in ${item} of ${entry} !`);
         }
-        if (itemMap.size > 0) {
+        if (validSet.size > 0) {
           yield {entry, itemMap};
         }
       } // test_items
@@ -71,11 +74,17 @@ function exec_search(fetch_data = fetchData(), queryWord, { ignore_case = true, 
       const url = entry.querySelector('url')?.textContent; // 2
       if (!url)
         throw Error("No 'url' in entry!");
-      console.debug(`Reached to get analyzeData : Url = ${url}\n`);
+      console.info(`Reached to get analyzeData : Url = ${url}\n`);
+      const titleIndicesText = itemMap.get('title');
+      if (!titleIndicesText)
+        console.error(`No title key!`);
+      else {
+        const {indices, text} = titleIndicesText.join;
+        console.info(` title: ${text}`);
+      }
       for(const [item, indicesText] of itemMap.entries()) {
         const {indices, text} = indicesText.join;
         const marked_text = mark_text(text, queryWord.length, indices);
-        debugger;
         console.info(` Marked text: ${marked_text}\n Item: ${item} \n`);
       }
     }
