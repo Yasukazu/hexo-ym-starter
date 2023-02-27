@@ -7,7 +7,7 @@ class SearchOutput {
      * check container element of #search
      * @param { {search_result_output: string, search_result_container_template: string, search_result_entry_template: string, search_result_entries: string } }
      */
-    constructor({search_result_output = "div#search-result-output",  search_result_container_template = "template#search-result-container", search_result_entry_template = "template#search-result-entry", search_result_entries= ".entries"}) {
+    constructor({search_result_output = "div#search-result-output",  search_result_container_template = "template#search-result-container", search_result_entry_template = "template#search-result-entry", search_result_entries= ".entries"}={}) {
       this._search_result_output = document.querySelector(search_result_output);
       if (!this._search_result_output)
         Error(`No ${search_result_output} !`);
@@ -49,7 +49,7 @@ class SearchOutput {
   /**
    * @param { {url: string, title: string, text: string, item: string } }
    */
-  addSearchResultFromUrlAndText({url, title, text, item}) { // entries, items) {
+  addSearchResult({url, title, text, item}) { // entries, items) {
     if (!this.search_result_container) 
       throw Error(`No built search_result_container !`);
     const entry_output = document.importNode(this.search_result_entry_template.content);
