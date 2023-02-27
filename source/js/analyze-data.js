@@ -7,7 +7,7 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
    * @param {Document} document // XML
    * @param {string} query_str // Regex expression
    * @param {{ignore_case: boolean, ignore_accents: boolean}}
-   * @yields {{entry: Element, indicesText: IndicesText}}
+   * @yields {{entry: Element, indicesText: IndicesText, item: string}}
    */
   function* analyzeData(document, query_str, {ignore_case = true, ignore_accents = true}) {
     const entries = document.getElementsByTagName('entry');
@@ -37,7 +37,7 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
             if (indicesText.isValid) {
               console.assert(pushedSet.size > 0, `pushedSet.size=${pushedSet.size}`) 
               found = true;
-              yield {entry, indicesText};
+              yield {entry, indicesText, item};
             }
           }
           else {
@@ -46,7 +46,7 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
               found = true;
               const indicesText = new IndicesText();
               indicesText.push(indexText);
-              yield {entry, indicesText};
+              yield {entry, indicesText, item};
             }
           }
         }
@@ -62,13 +62,13 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
  */
 function exec_search(fetch_data = fetchData(), queryWord, { ignore_case = true, ignore_accents = true }) {
   fetch_data.then(xml => {
-    /** @type {{entry: Element, indicesText: IndicesText}} */
-    for (const {entry, indicesText} of analyzeData(xml, queryWord, { ignore_case, ignore_accents })) {
+    /** @type {{entry: Element, indicesText: IndicesText, type: string}} */
+    for (const {entry, indicesText, item} of analyzeData(xml, queryWord, { ignore_case, ignore_accents })) {
       const {indices, text} = indicesText.join;
       const url = entry.querySelector('url')?.textContent; // 2
       if (!url)
         throw Error("No 'url' in entry!");
-      console.log(`Reached to get analyzeData : url = ${url}\n indices = ${indices}\n text: ${text}\n\n`);
+      console.log(`Reached to get analyzeData : Url = ${url}\n indices = ${indices}\n Text: ${text}\n Marked text: ${mark_text(text, queryWord.length, indices)}\n Item: ${item} \n`);
     }
   }, reason => {
     throw Error(`exec_search failed. reason:${reason}`);
@@ -83,20 +83,21 @@ function exec_search(fetch_data = fetchData(), queryWord, { ignore_case = true, 
  * @param {Array<number>} indices 
  * @returns {string}
  */
-function mark_indices(text, len, indices) {
-  /** @type {string} */
+function mark_text(text, len, indices, mark_start = "<mark>", mark_end = "</mark>") {
   let buffer = '';
-  const mark_start = "<mark>";
-  const mark_end = "</mark>";
   let pos = 0;
   for (const index of indices) {
-    if (pos >= text.length)
-      break;
     buffer += text.slice(pos, index);
     buffer += mark_start;
+    pos += index;
     buffer += text.slice(pos, pos + len);
-    pos += index + len;
+    pos += len;
     buffer += mark_end;
+    if (pos >= text.length) 
+      break;
+  }
+  if (pos < text.length - 1) {
+    buffer += text.slice(pos)
   }
   return buffer;
 }

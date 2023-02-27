@@ -82,7 +82,7 @@ class IndicesText {
 
   /**
    * returns empty indices if no found text.
-   * @returns {{indices: Array<number>, text: {string}}}
+   * @returns {{indices: Array<number>, text: string}}
    */
   get join() {
     /** @type {Array<number>} */
