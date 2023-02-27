@@ -1,5 +1,5 @@
 //@ts-check
-export {Search, startsFromDate};
+export {Search, startsFromDate, getFirstNChars};
 import {SearchFilter, walkTextNodes} from "./walkTextNodes.js";
 
 const fetch_path = '/search.xml';
@@ -237,16 +237,17 @@ class SearchInput {
 
 /**
  * 
- * @param {string[]} src 
+ * @param {string} src 
  * @param {Number} n 
  * @returns {Object}
  */
 function getFirstNChars(src, n) {
+  const array = Array.from(src); // every code point
   let lc = '';
   let i = 0;
   let out = '';
   let on_break = false;
-  for (let c of src) {
+  for (let c of array) {
     if (lc === ' ' && lc === c) {
       continue;
     }

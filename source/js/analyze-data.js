@@ -1,7 +1,7 @@
 //@ts-check
 import {SearchFilter, walkTextNodes, IndexText, IndicesText} from "./walkTextNodes.js";
 import { SearchOutput } from "./search-output.js";
-export {exec_search, analyzeData, fetchData, search_input, search_id};
+export {exec_search, analyzeData, fetchData, search_input, search_id, mark_text};
 
   /**
    * Picks up query-matching entries
@@ -60,20 +60,20 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
           yield {entry, itemMap};
         }
       } // test_items
-    } // entries
+    } // entriesconsole.log
   }
 
 /**
  * @param {Promise} fetch_data
- * @param {string} queryWord
+ * @param {string} query
  * @param {{ignore_case: boolean, ignore_accents: boolean}}
  * @returns {boolean}
  */
-function exec_search(fetch_data = fetchData(), queryWord, { ignore_case = true, ignore_accents = true }) {
+function exec_search(fetch_data = fetchData(), query, { ignore_case = true, ignore_accents = true }) {
   fetch_data.then(xml => {
     const output = new SearchOutput();
     /** @type {{entry: Element, itemMap: Map<string, IndicesText>}} */
-    for (const {entry, itemMap} of analyzeData(xml, queryWord, output, { ignore_case, ignore_accents })) {
+    for (const {entry, itemMap} of analyzeData(xml, query, output, { ignore_case, ignore_accents })) {
       const url = entry.querySelector('url')?.textContent; // 2
       if (!url)
         throw Error("No 'url' in entry!");
@@ -93,11 +93,12 @@ function exec_search(fetch_data = fetchData(), queryWord, { ignore_case = true, 
         console.error(`No content !`);
       else {
         const {indices, text} = contentIndicesText.join;
-        content = mark_text(text, queryWord.length, indices);
+        content = mark_text(text, query.length, indices);
         console.info(` content: ${content}`);
+        output.addSearchResult({entry, url, title, content, indices, query });
       }
-
     }
+    output.close();
   }, reason => {
     throw Error(`exec_search failed. reason:${reason}`);
   })
