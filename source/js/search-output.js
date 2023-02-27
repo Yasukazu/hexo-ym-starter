@@ -22,23 +22,20 @@ class SearchOutput {
         throw Error(`Failed to build a search_result_container from its template!`);
     }
 
-  /**
-   * 
-   * @param {Array<Element>} entries 
-   * @param {Array<string>} items 
-   */
-  generate(entries, items) {
-    if (entries.length > 0) {
-        while (this.search_result_output?.firstChild) {
-          this.search_result_output.firstChild.remove();
-        }
-
-        if (search_result) {
-          this.search_result_output?.append(search_result);
-        }
+  finish_output() {
+    /** @type {ChildNode|null|undefined} */
+    if (this._search_result_output) {
+      let child = null;
+      while (child = this._search_result_output.firstChild) {
+        this._search_result_output.removeChild(child);
+      }
+      this._search_result_output.appendChild(this.search_result_container);
+    }
+    else {
+      console.error(`No _search_result_output !`);
     }
   }
-
+  
   makeSearchResultContainer() {
     const search_result_container = document.importNode(this.search_result_container_template.content, true);
     if (!search_result_container) 
@@ -46,18 +43,12 @@ class SearchOutput {
 
   }
 
-
   /**
    * @param { {url: string, text: string, item: string } }
    */
-  makeSearchResultFromUrlAndMarkedText({url, text, item}) { // entries, items) {
-    const search_result_container = document.importNode(this.search_result_container_template.content, true);
-    if (!search_result_container) 
-      throw Error(`Failed to build a search_result_container from its template!`);
-    for (const [index, entry] of entries.entries()) {
-      const entry_output = document.importNode(this.search_result_entry_template.content, true);
-      if (!entry_output)
-        throw Error("Failed to import a node from the 'search result entry template'!");
+  addSearchResultFromUrlAndText({url, text, item}) { // entries, items) {
+    if (!this.search_result_container) 
+      throw Error(`No built search_result_container !`);
       const title = entry.querySelector('title')?.textContent; // children[0]
       if (!title)
         throw Error("No title in entry!");
@@ -112,7 +103,6 @@ class SearchOutput {
         it.innerText += items[index];
       }
       search_result_entries.append(entry_output);
-    }
     return search_result_container;
   }
 

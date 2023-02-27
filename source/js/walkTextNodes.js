@@ -158,19 +158,19 @@ class SearchFilter {
     this.re = RegExp(query, ignore_case ? 'ui' : 'u');
     /**
     * @param {string} text 
-    * @returns {IndexText|null}
+    * @returns {IndexText}
     */
     this.filter = (text) => {
       console.assert(text, "filter is called for an empty text!");
       const org_text = text.slice().trim();
       text = text.trim().normalize('NFKD');
       if (text.length != org_text.length) {
-        console.log(`text length changed by normalize.`);
+        console.debug(`text length changed by normalize.`);
       }
       text = text.replace(/[\s\n]+/gu, ' ');
       const nfkcText = org_text.trim().normalize('NFKC').replace(/[\s\n]+/gu, ' ');
       if (!text) {
-        console.log("text became empty after trimming, normalizing and replacing spaces.");
+        console.debug("text became empty after trimming, normalizing and replacing spaces.");
         return new IndexText(-1, '');
       }
       if (this.ignore_accents) {

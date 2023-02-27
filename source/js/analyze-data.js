@@ -7,7 +7,7 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
    * @param {Document} document // XML
    * @param {string} query_str // Regex expression
    * @param {{ignore_case: boolean, ignore_accents: boolean}}
-   * @yields {{entry: Element, indicesText: IndicesText, item: string}}
+   * @yields {{entry: Element, itemMap: Map<string, IndicesText>}}
    */
   function* analyzeData(document, query_str, {ignore_case = true, ignore_accents = true}) {
     const entries = document.getElementsByTagName('entry');
@@ -21,10 +21,8 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
     const filter = searchFilter.filter;
     const test_items = ['title:text', 'content:html'];
     for (const entry of entries) {
-      let found = false;
       for (const item_type of test_items) { 
-        if (found)
-          break;
+        const itemMap = new Map();
         const [item, type] = item_type.split(':');
         const content = entry.querySelector(item)?.textContent;
         if (content) {
@@ -35,23 +33,29 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
             }
             const {pushedSet, indicesText} = walkTextNodes(content_tree, filter);
             if (indicesText.isValid) {
+            debugger;
+              itemMap.set(item, indicesText);
               console.assert(pushedSet.size > 0, `pushedSet.size=${pushedSet.size}`) 
-              found = true;
-              yield {entry, indicesText, item};
             }
           }
           else {
             const indexText = filter(content);
             if (indexText.isValid) {
-              found = true;
               const indicesText = new IndicesText();
               indicesText.push(indexText);
-              yield {entry, indicesText, item};
+            debugger;
+              itemMap.set(item, indicesText);
             }
           }
         }
-      }
-    }
+        else {
+          console.error(`No content in ${item} of ${entry} !`);
+        }
+        if (itemMap.size > 0) {
+          yield {entry, itemMap};
+        }
+      } // test_items
+    } // entries
   }
 
 /**
@@ -62,13 +66,18 @@ export {exec_search, analyzeData, fetchData, search_input, search_id};
  */
 function exec_search(fetch_data = fetchData(), queryWord, { ignore_case = true, ignore_accents = true }) {
   fetch_data.then(xml => {
-    /** @type {{entry: Element, indicesText: IndicesText, type: string}} */
-    for (const {entry, indicesText, item} of analyzeData(xml, queryWord, { ignore_case, ignore_accents })) {
-      const {indices, text} = indicesText.join;
+    /** @type {{entry: Element, itemMap: Map<string, IndicesText>}} */
+    for (const {entry, itemMap} of analyzeData(xml, queryWord, { ignore_case, ignore_accents })) {
       const url = entry.querySelector('url')?.textContent; // 2
       if (!url)
         throw Error("No 'url' in entry!");
-      console.log(`Reached to get analyzeData : Url = ${url}\n indices = ${indices}\n Text: ${text}\n Marked text: ${mark_text(text, queryWord.length, indices)}\n Item: ${item} \n`);
+      console.debug(`Reached to get analyzeData : Url = ${url}\n`);
+      for(const [item, indicesText] of itemMap.entries()) {
+        const {indices, text} = indicesText.join;
+        const marked_text = mark_text(text, queryWord.length, indices);
+        debugger;
+        console.info(` Marked text: ${marked_text}\n Item: ${item} \n`);
+      }
     }
   }, reason => {
     throw Error(`exec_search failed. reason:${reason}`);
@@ -162,5 +171,5 @@ function search_id({search_text_id, ignore_case_id, ignore_accents_id}) {
     exec_search(fetchData(), input.value, {ignore_case, ignore_accents});
   }
   else
-    console.log(`No input value.`);
+    console.debug(`No input value.`);
 }
