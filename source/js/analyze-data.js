@@ -76,6 +76,31 @@ function exec_search(fetch_data = fetchData(), queryWord, { ignore_case = true, 
   return true;
 }
 
+/**
+ * 
+ * @param {string} text 
+ * @param {number} len 
+ * @param {Array<number>} indices 
+ * @returns {string}
+ */
+function mark_indices(text, len, indices) {
+  /** @type {string} */
+  let buffer = '';
+  const mark_start = "<mark>";
+  const mark_end = "</mark>";
+  let pos = 0;
+  for (const index of indices) {
+    if (pos >= text.length)
+      break;
+    buffer += text.slice(pos, index);
+    buffer += mark_start;
+    buffer += text.slice(pos, pos + len);
+    pos += index + len;
+    buffer += mark_end;
+  }
+  return buffer;
+}
+
 const fetch_path = '/search.xml';
 /**
  * 
