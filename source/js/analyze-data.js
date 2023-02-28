@@ -20,13 +20,13 @@ export {exec_search, analyzeData, fetchData, search_input, search_id, mark_text}
     }
     const searchFilter = new SearchFilter(query, {ignore_case, ignore_accents});
     const filter = searchFilter.filter;// IndexText
-    const test_items = ['title:text', 'content:html'];
     for (const entry of entries) {
+      /** @type {Set<string>} */
+      const validSet = new Set();
+      /** @type {Map<string, { ii: Array<number>, nfkcText: string} >} */
+      const itemMap = new Map(); // IndicesText
+      const test_items = ['title:text', 'content:html'];
       for (const item_type of test_items) { 
-        /** @type {Set<string>} */
-        const validSet = new Set();
-        /** @type {Map<string, { ii: Array<Array<number>>, nfkcText: string} >} */
-        const itemMap = new Map(); // IndicesText
         const [item, type] = item_type.split(':');
         const content = entry.querySelector(item)?.textContent;
         if (content) {
@@ -37,39 +37,32 @@ export {exec_search, analyzeData, fetchData, search_input, search_id, mark_text}
             }
             const bodyText = content_tree.body.textContent;
             if (bodyText) {
-              const {ii, nfkcText} = filter(bodyText);
-              if (ii.length > 0) {
-                validSet.add(item);
-                itemMap.set(item, {ii, nfkcText});
+              const filter_result = filter(bodyText);
+              if (filter_result) {
+                itemMap.set(item, filter_result);
+                break;
               }
             }
             else
               console.error(`content_tree.body.textContent not found!`);
-            // const {pushedSet, indicesText} = walkTextNodes(content_tree, filter);
-            // itemMap.set(item, indicesText);
-            /* if (indicesText.isValid) {
-              validSet.add(item);
-              console.assert(pushedSet.size > 0, `pushedSet.size=${pushedSet.size}`) 
-            } */
           }
           else {
-            const {ii, nfkcText} = filter(content); // indexText 
-            // const indicesText = new IndicesText();
-            // indicesText.push(indexText);
-            itemMap.set(item, {ii, nfkcText});
-            if (ii.length > 0) { // indexText.isValid) {
-              validSet.add(item);
+            const filter_result = filter(content); // indexText 
+            if (filter_result) {
+                itemMap.set(item, filter_result);
+                break;
             }
           }
         }
         else {
           console.info(`No content in ${item} of ${entry} !`);
         }
-        if (validSet.size > 0) {
-          yield {entry, itemMap};
-        }
-      } // test_items
-    } // entriesconsole.log
+      }
+      if (itemMap.size > 0) {
+        debugger;
+        yield {entry, itemMap};
+      }
+    }
   }
 
 /**
@@ -81,32 +74,33 @@ export {exec_search, analyzeData, fetchData, search_input, search_id, mark_text}
 function exec_search(fetch_data = fetchData(), query, { ignore_case = true, ignore_accents = true }) {
   fetch_data.then(xml => {
     const output = new SearchOutput();
-    /** @type {{entry: Element, itemMap: Map<string, IndicesText>}} */
+    /** @type {{entry: Element, itemMap: Map<string, {ii: Array<Array<number>>, nfkcText: string}>}} */
     for (const {entry, itemMap} of analyzeData(xml, query, output, { ignore_case, ignore_accents })) {
       const url = entry.querySelector('url')?.textContent; // 2
       if (!url)
         throw Error("No 'url' in entry!");
       console.info(`Reached to get analyzeData : Url = ${url}\n`);
       let title = '';
-      const titleIndicesText = itemMap.get('title');
-      if (!titleIndicesText)
-        console.error(`No title key!`);
-      else {
-        const {indices, text} = titleIndicesText.join;
-        title = text;
+      const titleMap = itemMap.get('title');
+      if (titleMap) {
+        const {ii, nfkcText} = titleMap; // const {indices, text} = titleIndicesText.join;
+        title = nfkcText;
         console.info(` title: ${title}`);
       }
+      else 
+        console.error(`No title key!`);
       let content = '';
-      const contentIndicesText = itemMap.get('content');
-      if (!contentIndicesText)
-        console.error(`No content !`);
-      else {
-        const {indices, text} = contentIndicesText.join;
-        content = mark_text(text, query.length, indices);
+      const contentMap = itemMap.get('content');
+      if (contentMap) {
+        const {ii, nfkcText} = contentMap;
+        debugger;
+        content = mark_text(nfkcText, query.length, ii);
         console.info(` content: ${content}`);
         debugger;
-        output.addSearchResult({entry, url, title, content, indices, query });
+        output.addSearchResult({entry, url, title, content, ii, query });
       }
+      else
+        console.error(`No content !`);
     }
     output.close();
   }, reason => {

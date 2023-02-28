@@ -155,10 +155,10 @@ class SearchFilter {
   constructor(query, { ignore_case = true, ignore_accents = true }) {
     this.ignore_case = ignore_case;
     this.ignore_accents = ignore_accents;
-    this._re = RegExp(query, ignore_case ? 'uigd' : 'ugd');
+    this._re = RegExp(query, ignore_case ? 'uid' : 'ud');
     /**
     * @param {string} text 
-    * @returns { {ii: Array<Array<number>>, nfkcText: string} } // {IndexText}
+    * @returns { {ii: Array<number>, nfkcText: string}|null } // {IndexText}
     */
     this.filter = (text) => {
       console.assert(text, "filter is called for an empty text!");
@@ -178,15 +178,13 @@ class SearchFilter {
         console.assert(text, "text became empty after replacing accents!");
         console.assert(text.length == nfkcText.length, "Search text length changed by normalize and replacing accents.")
       }
-      /** @type {IterableIterator} */
-      const _ii = text.matchAll(this._re); // text.search(this._re); 
-      /** @type {Array<Array<number>>} */
-      const ii = [];
-      /** @type {Array<number>} */
-      for (const i of _ii) {
-        ii.push(i.indices);
+      const _ii = text.match(this._re); // text.search(this._re); 
+      if (!_ii) {
+        return null;
       }
-      return {ii, nfkcText}; // new IndexText(i, nfkcText);
+      else {
+        return {ii: _ii.indices[0], nfkcText};
+      }
     }
   }
 
