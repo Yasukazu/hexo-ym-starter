@@ -19,8 +19,7 @@ export {exec_search, analyzeData, fetchData, search_input, search_id, mark_text}
       query = query.replace(combining_chars_regex, '');
     }
     const searchFilter = new SearchFilter(query, {ignore_case, ignore_accents});
-    /** @type {(str: string) => IndexText} */
-    const filter = searchFilter.filter;
+    const filter = searchFilter.filter;// IndexText
     const test_items = ['title:text', 'content:html'];
     for (const entry of entries) {
       for (const item_type of test_items) { 
@@ -35,6 +34,13 @@ export {exec_search, analyzeData, fetchData, search_input, search_id, mark_text}
             const content_tree = new DOMParser().parseFromString(content, "text/html");
             if (!content_tree) {
               throw Error(`Failed to parse from string text/html at entry:${entry.TEXT_NODE}`);
+            }
+            const bodyText = content_tree.body.textContent;
+            if (bodyText) {
+              const {ii, nfkcText} = filter(bodyText);
+              for (const i of ii) {
+                debugger;
+              }
             }
             const {pushedSet, indicesText} = walkTextNodes(content_tree, filter);
             itemMap.set(item, indicesText);
@@ -95,6 +101,7 @@ function exec_search(fetch_data = fetchData(), query, { ignore_case = true, igno
         const {indices, text} = contentIndicesText.join;
         content = mark_text(text, query.length, indices);
         console.info(` content: ${content}`);
+        debugger;
         output.addSearchResult({entry, url, title, content, indices, query });
       }
     }

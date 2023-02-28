@@ -1,6 +1,6 @@
 //@ts-check
-import { startsFromDate, getFirstNChars } from "./search";
-import { mark_text } from "./analyze-data";
+import { startsFromDate, getFirstNChars } from "./search.js";
+import { mark_text } from "./analyze-data.js";
 export { SearchOutput };
 
 class SearchOutput {
@@ -8,22 +8,22 @@ class SearchOutput {
    * check container element of #search
    * @param { {search_result_output: string, search_result_container_template: string, search_result_entry_template: string, search_result_entries: string } }
    */
-  constructor({ search_result_output = "div#search-result-output", search_result_container_template = "template#search-result-container", search_result_entry_template = "template#search-result-entry", search_result_entries = ".entries" } = {}) {
+  constructor({ search_result_output = "#search-result-output", search_result_container_template = "template#search-result-container", search_result_entry_template = "template#search-result-entry", search_result_entries = ".entries" } = {}) {
     this._search_result_output = document.querySelector(search_result_output);
     if (!this._search_result_output)
-      Error(`No ${search_result_output} !`);
-    this.search_result_container_template = document.querySelector(search_result_container_template);
-    if (!this.search_result_container_template)
-      throw Error(`!No ${search_result_container_template}!`);
-    this.search_result_entry_template = document.querySelector(search_result_entry_template);
-    if (!this.search_result_entry_template)
-      throw Error(`!No ${search_result_entry_template}!`);
-    this.search_result_entries = document.querySelector(search_result_entries);
+      Error(`No element selector: ${search_result_output} !`);
+    const _search_result_container_template = document.querySelector(search_result_container_template);
+    if (!_search_result_container_template)
+      throw Error(`!No template selector: ${search_result_container_template}!`);
+    this._search_result_container = document.importNode(_search_result_container_template.content, true);
+    if (!this._search_result_container)
+      throw Error(`Failed to build a search_result_container from its template: ${search_result_container_template}!`);
+    this.search_result_entries = this._search_result_container.querySelector(search_result_entries);
     if (!this.search_result_entries)
       throw Error(`No ${search_result_entries}!`);
-    this.search_result_container = document.importNode(this.search_result_container_template.content, true);
-    if (!this.search_result_container)
-      throw Error(`Failed to build a search_result_container from its template!`);
+    this.search_result_entry_template = document.querySelector(search_result_entry_template);
+    if (!this.search_result_entry_template)
+      throw Error(`!No template selector: ${search_result_entry_template}!`);
   }
 
   close() {
@@ -33,10 +33,13 @@ class SearchOutput {
       while (child = this._search_result_output.firstChild) {
         this._search_result_output.removeChild(child);
       }
-      this._search_result_output.appendChild(this.search_result_container);
+      if (this._search_result_container && this.search_result_entries?.firstChild)
+        this._search_result_output.appendChild(this._search_result_container);
+      else
+        console.info(`Nothing to append to ${this._search_result_output}`);
     }
     else {
-      console.error(`No _search_result_output !`);
+      console.error(`Close failed!: No _search_result_output`);
     }
   }
 
@@ -44,9 +47,11 @@ class SearchOutput {
    * @param { {entry: Element, url: string, title: string, content: string, indices: Array<number>, query: string } }
    */
   addSearchResult({ entry, url, title, content, indices, query }) {
-    if (!this.search_result_container)
-      throw Error(`No built search_result_container !`);
+    if (!this.search_result_entries)
+      throw Error(`No built search_result_entries !`);
     const entry_output = document.importNode(this.search_result_entry_template.content);
+    if (!entry_output)
+      console.error(`Failed to import entry_output from template: ${this.search_result_entry_template}!`);
     const ar = entry_output.querySelector('a.title');
     if (!ar)
       throw Error("No 'a' in template!");
@@ -87,6 +92,8 @@ class SearchOutput {
       if (it) {
         it.innerText += item;
       } */
+      this.search_result_entries.appendChild(entry_output);
+      console.debug(`Output entry_output: ${entry_output}`);
     }
     else
       console.error(`No entry output '.content'`);
