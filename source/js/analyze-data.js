@@ -59,7 +59,6 @@ export {exec_search, analyzeData, fetchData, search_input, search_id, mark_text}
         }
       }
       if (itemMap.size > 0) {
-        debugger;
         yield {entry, itemMap};
       }
     }
@@ -79,28 +78,30 @@ function exec_search(fetch_data = fetchData(), query, { ignore_case = true, igno
       const url = entry.querySelector('url')?.textContent; // 2
       if (!url)
         throw Error("No 'url' in entry!");
-      console.info(`Reached to get analyzeData : Url = ${url}\n`);
+      console.debug(`Reached to get analyzeData : Url = ${url}\n`);
       let title = '';
       const titleMap = itemMap.get('title');
       if (titleMap) {
         const {ii, nfkcText} = titleMap; // const {indices, text} = titleIndicesText.join;
         title = nfkcText;
-        console.info(` title: ${title}`);
+        console.debug(` title: ${title}`);
       }
       else 
-        console.error(`No title key!`);
+        console.debug(`No title key.`);
       let content = '';
+      /** @type {Array<number>} */
+      let ii = [];
       const contentMap = itemMap.get('content');
       if (contentMap) {
-        const {ii, nfkcText} = contentMap;
-        debugger;
-        content = mark_text(nfkcText, query.length, ii);
-        console.info(` content: ${content}`);
-        debugger;
-        output.addSearchResult({entry, url, title, content, ii, query });
+        content = contentMap.nfkcText;
+        ii = contentMap.ii;
+        const _content = mark_text(content, ii);
+        console.debug(` content: ${_content}`);
       }
       else
-        console.error(`No content !`);
+        console.debug(`No content.`);
+      console.assert(title.length > 0 || content.length > 0, `title or content must not empty.`);
+      output.addSearchResult({entry, url, title, content, ii});
     }
     output.close();
   }, reason => {
@@ -112,11 +113,15 @@ function exec_search(fetch_data = fetchData(), query, { ignore_case = true, igno
 /**
  * 
  * @param {string} text 
- * @param {number} len 
- * @param {Array<number>} indices 
+ * @param {Array<number>} start_end 
  * @returns {string}
  */
-function mark_text(text, len, indices, mark_start = "<mark>", mark_end = "</mark>") {
+function mark_text(text, start_end, mark_start = "<mark>", mark_end = "</mark>") {
+  const before_mark = text.slice(0, start_end[0]);
+  const inside_mark = text.slice(start_end[0], start_end[1]);
+  const after_mark = text.slice(start_end[1]);
+  return before_mark + mark_start + inside_mark + mark_end + after_mark;
+/*
   let buffer = '';
   let pos = 0;
   for (const index of indices) {
@@ -132,7 +137,7 @@ function mark_text(text, len, indices, mark_start = "<mark>", mark_end = "</mark
   if (pos < text.length - 1) {
     buffer += text.slice(pos)
   }
-  return buffer;
+  return buffer; */
 }
 
 const fetch_path = '/search.xml';

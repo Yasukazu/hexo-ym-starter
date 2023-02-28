@@ -44,19 +44,20 @@ class SearchOutput {
   }
 
   /**
-   * @param { {entry: Element, url: string, title: string, content: string, indices: Array<number>, query: string } }
+   * @param { {entry: Element, url: string, title: string, content: string, ii: Array<number>} }
    */
-  addSearchResult({ entry, url, title, content, indices, query }) {
+  addSearchResult({ entry, url, title, content, ii}) {
     if (!this.search_result_entries)
       throw Error(`No built search_result_entries !`);
-    const entry_output = document.importNode(this.search_result_entry_template.content);
+    const entry_output = document.importNode(this.search_result_entry_template.content, true);
+    debugger;
     if (!entry_output)
       console.error(`Failed to import entry_output from template: ${this.search_result_entry_template}!`);
     const ar = entry_output.querySelector('a.title');
     if (!ar)
       throw Error("No 'a' in template!");
     ar.href = url;
-    ar.innerText = title;
+    ar.innerText = title.length > 0 ? title : url;
     const date_str = startsFromDate(url);
     if (date_str) {
       const dt = entry_output.querySelector('.date');
@@ -76,7 +77,7 @@ class SearchOutput {
         }
       }
       const { output: limitedStr, on_break: onBreak } = getFirstNChars(content, len);
-      const markedText = mark_text(limitedStr, query.length, indices) + (onBreak ? '...' : '');
+      const markedText = mark_text(limitedStr, ii) + (onBreak ? '...' : '');
       ct.innerHTML = markedText;
       const img_out = entry_output.querySelector('img');
       if (img_out) {
