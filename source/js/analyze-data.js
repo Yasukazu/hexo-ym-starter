@@ -40,7 +40,6 @@ export {exec_search, analyzeData, fetchData, search_input, search_id, mark_text}
               const filter_result = filter(bodyText);
               if (filter_result) {
                 itemMap.set(item, filter_result);
-                break;
               }
             }
             else
@@ -50,7 +49,6 @@ export {exec_search, analyzeData, fetchData, search_input, search_id, mark_text}
             const filter_result = filter(content); // indexText 
             if (filter_result) {
                 itemMap.set(item, filter_result);
-                break;
             }
           }
         }
@@ -86,8 +84,14 @@ function exec_search(fetch_data = fetchData(), query, { ignore_case = true, igno
         title = nfkcText;
         console.debug(` title: ${title}`);
       }
-      else 
+      else {
         console.debug(`No title key.`);
+        debugger;
+        const _title = entry.querySelector('title')?.textContent;
+        if (_title) {
+          title = _title;
+        }
+      }
       let content = '';
       /** @type {Array<number>} */
       let ii = [];
@@ -98,9 +102,16 @@ function exec_search(fetch_data = fetchData(), query, { ignore_case = true, igno
         const _content = mark_text(content, ii);
         console.debug(` content: ${_content}`);
       }
-      else
+      else {
         console.debug(`No content.`);
+        debugger;
+        const _content = entry.querySelector('content')?.textContent;
+        if (_content) {
+          content = _content;
+        }
+      }
       console.assert(title.length > 0 || content.length > 0, `title or content must not empty.`);
+      console.assert((content.length == 0 && ii.length == 0)||(content.length > 0 && ii.length > 0), `content accompanies ii.`);
       output.addSearchResult({entry, url, title, content, ii});
     }
     output.close();
