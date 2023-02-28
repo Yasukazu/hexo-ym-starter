@@ -158,7 +158,7 @@ class SearchFilter {
     this._re = RegExp(query, ignore_case ? 'uigd' : 'ugd');
     /**
     * @param {string} text 
-    * @returns { {ii: IterableIterator<RegExpMatchArray>, nfkcText: string} } // {IndexText}
+    * @returns { {ii: Array<Array<number>>, nfkcText: string} } // {IndexText}
     */
     this.filter = (text) => {
       console.assert(text, "filter is called for an empty text!");
@@ -178,8 +178,14 @@ class SearchFilter {
         console.assert(text, "text became empty after replacing accents!");
         console.assert(text.length == nfkcText.length, "Search text length changed by normalize and replacing accents.")
       }
-      /** @type {IterableIterator<RegExpMatchArray>} */
-      const ii = text.matchAll(this._re); // text.search(this._re); 
+      /** @type {IterableIterator} */
+      const _ii = text.matchAll(this._re); // text.search(this._re); 
+      /** @type {Array<Array<number>>} */
+      const ii = [];
+      /** @type {Array<number>} */
+      for (const i of _ii) {
+        ii.push(i.indices);
+      }
       return {ii, nfkcText}; // new IndexText(i, nfkcText);
     }
   }

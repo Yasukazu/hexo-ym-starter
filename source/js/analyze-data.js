@@ -9,7 +9,7 @@ export {exec_search, analyzeData, fetchData, search_input, search_id, mark_text}
    * @param {string} query_str // Regex expression
    * @param {SearchOutput} searchOutput
    * @param {{ignore_case: boolean, ignore_accents: boolean}}
-   * @yields {{entry: Element, itemMap: Map<string, IndicesText>}}
+   * @yields {{entry: Element, itemMap: Map<string, {ii: Array<Array<num>>, nfkcText: string}>}} // IndicesText
    */
   function* analyzeData(document, query_str, searchOutput, {ignore_case = true, ignore_accents = true}) {
     const entries = document.getElementsByTagName('entry');
@@ -25,8 +25,8 @@ export {exec_search, analyzeData, fetchData, search_input, search_id, mark_text}
       for (const item_type of test_items) { 
         /** @type {Set<string>} */
         const validSet = new Set();
-        /** @type {Map<string, IndicesText>} */
-        const itemMap = new Map();
+        /** @type {Map<string, { ii: Array<Array<number>>, nfkcText: string} >} */
+        const itemMap = new Map(); // IndicesText
         const [item, type] = item_type.split(':');
         const content = entry.querySelector(item)?.textContent;
         if (content) {
@@ -38,23 +38,26 @@ export {exec_search, analyzeData, fetchData, search_input, search_id, mark_text}
             const bodyText = content_tree.body.textContent;
             if (bodyText) {
               const {ii, nfkcText} = filter(bodyText);
-              for (const i of ii) {
-                debugger;
+              if (ii.length > 0) {
+                validSet.add(item);
+                itemMap.set(item, {ii, nfkcText});
               }
             }
-            const {pushedSet, indicesText} = walkTextNodes(content_tree, filter);
-            itemMap.set(item, indicesText);
-            if (indicesText.isValid) {
+            else
+              console.error(`content_tree.body.textContent not found!`);
+            // const {pushedSet, indicesText} = walkTextNodes(content_tree, filter);
+            // itemMap.set(item, indicesText);
+            /* if (indicesText.isValid) {
               validSet.add(item);
               console.assert(pushedSet.size > 0, `pushedSet.size=${pushedSet.size}`) 
-            }
+            } */
           }
           else {
-            const indexText = filter(content);
-            const indicesText = new IndicesText();
-            indicesText.push(indexText);
-            itemMap.set(item, indicesText);
-            if (indexText.isValid) {
+            const {ii, nfkcText} = filter(content); // indexText 
+            // const indicesText = new IndicesText();
+            // indicesText.push(indexText);
+            itemMap.set(item, {ii, nfkcText});
+            if (ii.length > 0) { // indexText.isValid) {
               validSet.add(item);
             }
           }
