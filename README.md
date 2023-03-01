@@ -18,7 +18,7 @@ This is my branch of the template for making a theme of Hexo with Pug.
 - hexo-generator-search
 
 ## サイト内全文検索 (In-site full-text search)
-`themes/ym-start/layout/_include/header.pug` contains templates for search result output.
+`themes/ym-start/layout/_include/search.pug` contains templates for search result output.
 
 ```pug
 template#search-result-container
@@ -33,11 +33,11 @@ template#search-result-entry
     p(data-length=200).content
 ```
 
-These templates use a script file of `themes/ym-start/source/js/search.js`.
+The entry function for these templates is **exec_search** in a script file `themes/ym-start/source/js/analyze-data.js`.
 Don't change tag names and their class names except `h2`, `time` and `p` tags.
 - Content cut-off length is adjustable with `data-length` attribute(default=300) of an element with 'content' class.
 
-### Search ignores Unicode Combining Characters(diacritical marks like [tilde: ñ], Japanese _dakuten_ and _handakuten_)
+### Search ignores Unicode Combining Characters(diacritical marks like [tilde: ñ], Japanese _dakuten_ and _handakuten_) and case-insensitive by default(User can switch both with checkboxes).
 
 Using **normalize('NFKD')** method of JavaScript
 
