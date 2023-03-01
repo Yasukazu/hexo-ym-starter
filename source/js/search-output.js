@@ -46,17 +46,24 @@ class SearchOutput {
   /**
    * @param { {entry: Element, url: string, title: string, content: string, ii: Array<number>} }
    */
-  addSearchResult({ entry, url, title, content, ii}) {
+  addSearchResult({ entry, url, title, content, ii }) {
     if (!this.search_result_entries)
       throw Error(`No built search_result_entries !`);
     const entry_output = document.importNode(this.search_result_entry_template.content, true);
-    debugger;
     if (!entry_output)
       console.error(`Failed to import entry_output from template: ${this.search_result_entry_template}!`);
     const ar = entry_output.querySelector('a.title');
     if (!ar)
       throw Error("No 'a' in template!");
     ar.href = url;
+    if (title.length == 0) {
+      // try to get title from entry
+      const _title = entry.querySelector('title')?.textContent;
+      if (_title) {
+        title = _title;
+        console.info(`title is got from entry:${title}`)
+      }
+    }
     ar.innerText = title.length > 0 ? title : url;
     const date_str = startsFromDate(url);
     if (date_str) {
@@ -66,19 +73,44 @@ class SearchOutput {
         console.debug(`Output date_str: ${date_str}`);
       }
     }
-    const ct = entry_output.querySelector('.content');
-    if (ct) {
-      const length = ct.getAttribute('data-length');
+    const dst = entry_output.querySelector('.content');
+    if (dst) {
+      const length = dst.getAttribute('data-length');
       let len = 300;
       if (length) {
         const _len = parseInt(length, 10);
         if (_len) {
           len = _len;
+          console.debug(`data-length(${len}) is used.`);
         }
       }
+      if (content.length == 0) {
+        const _content = entry.querySelector('content')?.textContent;
+        if (_content) {
+          const content_tree = new DOMParser().parseFromString(_content, "text/html");
+          if (content_tree) {
+            const content_text = content_tree.body.textContent;
+            if (content_text) {
+              content = content_text;
+              console.info(`content is got from entry.`)
+            }
+            else 
+              throw Error(`Failed to get textContent.`);
+          }
+          else
+            throw Error(`Failed to get content_tree.`);
+        }
+        else
+          throw Error(`Unable to get content from entry!`);
+      }
       const { output: limitedStr, on_break: onBreak } = getFirstNChars(content, len);
-      const markedText = mark_text(limitedStr, ii) + (onBreak ? '...' : '');
-      ct.innerHTML = markedText;
+      if (ii.length > 0) {
+        const markedText = mark_text(limitedStr, ii) + (onBreak ? '...' : '');
+        dst.innerHTML = markedText;
+      }
+      else {
+        dst.innerHTML = limitedStr + (onBreak ? '...' : '');
+      }
       const img_out = entry_output.querySelector('img');
       if (img_out) {
         const img_in = entry.querySelector('img');
@@ -86,13 +118,10 @@ class SearchOutput {
           const img_src = img_in.getAttribute('src');
           if (img_src) {
             img_out.setAttribute('src', img_src);
+            console.debug(`img src is set`);
           }
         }
       }
-      /* const it = entry_output.querySelector('.found-in');
-      if (it) {
-        it.innerText += item;
-      } */
       this.search_result_entries.appendChild(entry_output);
       console.debug(`Output entry_output: ${entry_output}`);
     }

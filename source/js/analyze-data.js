@@ -86,7 +86,6 @@ function exec_search(fetch_data = fetchData(), query, { ignore_case = true, igno
       }
       else {
         console.debug(`No title key.`);
-        debugger;
         const _title = entry.querySelector('title')?.textContent;
         if (_title) {
           title = _title;
@@ -104,11 +103,10 @@ function exec_search(fetch_data = fetchData(), query, { ignore_case = true, igno
       }
       else {
         console.debug(`No content.`);
-        debugger;
-        const _content = entry.querySelector('content')?.textContent;
+        /* const _content = entry.querySelector('content')?.textContent;
         if (_content) {
           content = _content;
-        }
+        } */
       }
       console.assert(title.length > 0 || content.length > 0, `title or content must not empty.`);
       console.assert((content.length == 0 && ii.length == 0)||(content.length > 0 && ii.length > 0), `content accompanies ii.`);

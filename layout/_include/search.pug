@@ -1,7 +1,3 @@
-script(type='module' src="/js/analyze-data.js")
-script(type='module' src="/js/search.js")
-script(type='module' src="/js/search-output.js")
-
 - const submit_search_id = "submit-search" // ; type=""}{element: "button", 
 - const search_text_id = "search-text"; // type="text"}{element: "input", 
 - const ignore_case_id = "ignore-case"; // type="checkbox"}{element: "input", 
@@ -61,13 +57,7 @@ template(id=search_result_container_id)
 template(id=search_result_entry_id)
   li(class=search_result_entry_id)
     a.title    time.date
-    small.found-in Found in: 
     p(data-length=200).content
     img.thumbnail
 
-
-//- script(type='module' src="/js/search.js")
-//- script(type='module' src="/js/search-input.js")
-
-  // const search = new Search();
-  // const searchInput = new SearchInput(search.search_func);
+//-    small.found-in Found in: 
