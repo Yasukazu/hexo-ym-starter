@@ -52,15 +52,21 @@ div(id=search_input_id)
   button(id=submit_search_id, onClick="search()") Search
 // div(id=search_result_output_id)
 
+- var search_result_name = "search-result"
+- var search_entries_name = "search-entries"
+
 template(id=search_result_container_id)
   div(id=search_result_container_id)
-    h2 (Place for #{search_result_container_id})
+    h2 
+      slot(name=search_result_name) (Search result)
     ul.entries
+      slot(name=search_entries_name)
 
 template(id=search_result_entry_id)
   li(class=search_result_entry_id)
-    a.title    time.date
-    p(data-length=200).content
+    a.title #[slot(name='title')]
+    time.date #[slot(name='date')]
+    p(data-length=200).content #[slot(name='content')]
     img.thumbnail
 
 script(type="module").
@@ -85,3 +91,20 @@ script(type="module").
   );
 
 #{search_result_container_id}(id=search_result_container_id, style="color: red;")
+  span(slot=search_result_name, class=search_result_name) Slotted search result:
+  li(slot=search_entries_name, class=search_entries_name) item 1
+
+
+// change search_result_name slot
+script(type="module").
+    const search_result_container = document.querySelector("#{search_result_container_id}");
+    console.assert(search_result_container, "Failed to get search_result_container!");
+    const search_result = document.querySelector("#{search_result_container_id} > .#{search_result_name}");
+  console.assert(search_result, "Failed to get search_result!");
+  search_result.innerText = "New search result.";
+  const search_entries = document.querySelector("#{search_result_container_id} > .#{search_entries_name}");
+  console.assert(search_entries, "Failed to get search_entries!");
+  search_result_container.removeChild(search_entries);
+  console.debug("Removed search_entries.")
+
+  // search_result.innerHTML = "New search result.";
