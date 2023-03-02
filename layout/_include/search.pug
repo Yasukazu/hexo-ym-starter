@@ -1,13 +1,16 @@
-- const submit_search_id = "submit-search" // ; type=""}{element: "button", 
-- const search_text_id = "search-text"; // type="text"}{element: "input", 
-- const ignore_case_id = "ignore-case"; // type="checkbox"}{element: "input", 
-- const ignore_accents_id = "ignore-accents"; // type="checkbox"}{element: "input", 
-- const search_input_id = "search-input"; // type=''}{element: "div", 
-- const search_result_output_id = "search-result-output"; // type=''}{element: "div", 
-- const search_result_container_id = "search-result-container"; // type=''}{element: "template", 
-- const search_result_entry_id = "search-result-entry"; // type=''}{element: "template", 
+-
+  const submit_search_id = "submit-search"
+  const search_text_id = "search-text"
+  const ignore_case_id = "ignore-case"
+  const ignore_accents_id = "ignore-accents"
+  const search_input_id = "search-input"
+  const search_result_output_id = "search-result-output"
+  const search_result_container_id = "search-result-container"
+  const search_result_entry_id = "search-result-entry"
+
 script(type="module").
   import {exec_search, fetchData} from "/js/analyze-data.js";
+
   function search() {
   const input = document.getElementById("#{search_text_id}");
   if (!input)
@@ -47,11 +50,11 @@ div(id=search_input_id)
   input(id=ignore_accents_id, type="checkbox" checked)
   label(for=ignore_accents_id) Ignore accents
   button(id=submit_search_id, onClick="search()") Search
-div(id=search_result_output_id)
+// div(id=search_result_output_id)
 
 template(id=search_result_container_id)
-  div(class=search_result_container_id)
-    h2 Search result
+  div(id=search_result_container_id)
+    h2 (Place for #{search_result_container_id})
     ul.entries
 
 template(id=search_result_entry_id)
@@ -60,4 +63,25 @@ template(id=search_result_entry_id)
     p(data-length=200).content
     img.thumbnail
 
-//-    small.found-in Found in: 
+script(type="module").
+  //- import {defineCustomElementFromTemplateId} from '/js/custom-element.js'
+  customElements.define(
+  "#{search_result_container_id}",
+  class extends HTMLElement {
+    constructor() {
+      super();
+      const template = document.getElementById("#{search_result_container_id}");
+      console.assert(template, `no template!`);
+      const templateContent = template.content;
+      console.assert(`no template content`);
+      const _shadowRoot = this.attachShadow({mode: 'open'});
+      console.assert(_shadowRoot, `attach shadow failed!`);
+      const cloned = templateContent.cloneNode(true);
+      console.assert(cloned, `clone node failed!`);
+      _shadowRoot.appendChild(cloned);
+      console.debug(`shadow root(${_shadowRoot}) appended a cloned child(${cloned}).`);
+    }
+  }
+  );
+
+#{search_result_container_id}(id=search_result_container_id, style="color: red;")

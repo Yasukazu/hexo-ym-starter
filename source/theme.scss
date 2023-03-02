@@ -149,8 +149,7 @@ code {
 		border-top: thin solid #000;
 	}
 }
-div {
-	&.search-result-container {
+	#search-result-container {
 		border: thin solid #000;
 		label[for|="input-ignore"] {
 			margin-right: 0.7em;
@@ -167,4 +166,3 @@ div {
 			}
 		}
 	}
-}

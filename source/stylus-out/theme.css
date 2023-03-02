@@ -108,12 +108,15 @@ code::after {
 div#search label[for|="input-ignore"] {
   margin-right: 0.8em;
 }
-div.search-result-container border thin solid black.search-result-entry {
-  background-color: #fff;
+#search-result-container {
+  background-color: #eee;
 }
-div.search-result-container border thin solid black.search-result-entry .date {
+#search-result-container > h2 {
+  color: red;
+}
+#search-result-container .search-result-entry .date {
   margin: 0 1em;
 }
-div.search-result-container border thin solid black.search-result-entry img {
+#search-result-container .search-result-entry img {
   width: 20%;
 }
