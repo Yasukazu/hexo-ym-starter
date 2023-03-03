@@ -104,26 +104,84 @@ class ItemMap {
     return this.map.get('content')?.ii;
   }
 
+}
+
+class FullMap {
+  /**
+   * 
+   * @param {Element} entry 
+   * @param {ItemMap} itemMap 
+   */
+  constructor(entry, itemMap) {
+    this.entry = entry;
+    this.itemMap = itemMap;
+  }
+
+  /**
+   * @returns {string|undefined|null}
+   */
+  get title() {
+    const t = this.itemMap.title;
+    if (!t) {
+      return this.entry.querySelector('title')?.textContent;
+    }
+  }
+
+  /**
+   * @returns {string|undefined|null}
+   */
+  get content() {
+    const c = this.itemMap.content;
+    if (!c) {
+      return this.entry.querySelector('content')?.textContent;
+    }
+  }
+
+  /**
+   * @returns {number[]|undefined}
+   */
+  get ii() {
+    return this.itemMap.ii;
+  }
+
+  /**
+   * @returns {string|null}
+   */
+  get markedContent() {
+    if (this.content && this.ii)
+      return mark_text(this.content, this.ii);
+    else
+      return null;
+  }
+
+  /**
+   * @returns {string|undefined|null}
+   */
+  get url() {
+    return this.entry.querySelector('url')?.textContent;
+  }
 
 }
-  /**
-   * Picks up query-matching entries
-   * @param {Document} document // XML
-   * @param {string} query_str // Regex expression
-   * @param {{ignore_case: boolean, ignore_accents: boolean}}
-   * @yields {entry: Element, itemMap: ItemMap} >} 
-   */
-  function* analyzeData(document, query_str, {ignore_case = true, ignore_accents = true}) {
-    const entries = document.querySelectorAll('entry');
-    if (!entries)
-      throw Error(`No entries!`);
-    for (const entry of entries) {
-      const itemMap = new ItemMap(query_str, {ignore_case, ignore_accents});
-      itemMap.test(entry);
-      if (itemMap.isValid) {
-        yield {entry, itemMap};
-      }
+
+/**
+ * Picks up query-matching entries
+ * @param {Document} document // XML
+ * @param {string} query_str // Regex expression
+ * @param {{ignore_case: boolean, ignore_accents: boolean}}
+ * @yields {entry: Element, itemMap: ItemMap} >} 
+ */
+function* analyzeData(document, query_str, {ignore_case = true, ignore_accents = true}) {
+  const entries = document.querySelectorAll('entry');
+  if (!entries)
+    throw Error(`No entries!`);
+  for (const entry of entries) {
+    const itemMap = new ItemMap(query_str, {ignore_case, ignore_accents});
+    itemMap.test(entry);
+    if (itemMap.isValid) {
+      yield {entry, itemMap};
     }
+  }
+}
 
 /**
  * @param {Promise} fetch_data
