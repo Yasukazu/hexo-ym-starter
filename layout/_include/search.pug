@@ -4,9 +4,74 @@
   const ignore_case_id = "ignore-case"
   const ignore_accents_id = "ignore-accents"
   const search_input_id = "search-input"
-  const search_result_output_id = "search-result-output"
+  // const search_result_output_id = "search-result-output"
+
+
+div(id=search_input_id)
+  label(for=search_text_id) Enter search text:
+  input(id=search_text_id, type="text", name=search_text_id)
+  input(id=ignore_case_id, type="checkbox", checked)
+  label(for=ignore_case_id) Ignore case
+  input(id=ignore_accents_id, type="checkbox" checked)
+  label(for=ignore_accents_id) Ignore accents
+  button(id=submit_search_id, onClick="search()") Search
+// div(id=search_result_output_id)
+
+
+-
   const search_result_container_id = "search-result-container"
+  const search_result_container_map = {id: "search-result-container", heading: "heading", entries: "entries"}
+  const search_result_container_array = ["search-result-container", "heading", "entries"]
+  const search_result_name = "search-result"
+  const search_entries_name = "search-entries"
+  const search_result_entry_map = {id: "search-result-entry", title: 'a', date: 'time', content: 'p'}
+  const search_result_entry_array = ["search-result-entry", 'title', ]
   const search_result_entry_id = "search-result-entry"
+  const a_title = "a-title"
+  const time_date = "time-date"
+  const p_content = "p-content"
+
+template(id=search_result_container_map[id])
+  div(id=search_result_container_map[id])
+    h2(class=search_result_container_map[heading])
+      slot(name=search_result_container_map[heading]) (Search result)
+    ul(class=search_result_container_map[entries])
+      slot(name=search_result_container_map[entries])
+
+  template(id=search_result_entry_id)
+    li(class=search_result_entry_id)
+      a(class=a_title)
+        slot(name=a_title)
+      time(class=time_date)
+        slot(name=time_date)
+      p(data-length=200 class=p_content)
+        slot(name=p_content)
+      img.thumbnail`
+
+script(type="module").
+  customElements.define(
+  "#{search_result_container_map[id]}",
+  class extends HTMLElement {
+    constructor() {
+      super();
+      const template = document.getElementById("#{search_result_container_map[id]}");
+      console.assert(template, `no template!`);
+      const templateContent = template.content;
+      console.assert(`no template content`);
+      const _shadowRoot = this.attachShadow({mode: 'open'});
+      console.assert(_shadowRoot, `attach shadow failed!`);
+      const cloned = templateContent.cloneNode(true);
+      console.assert(cloned, `clone node failed!`);
+      const child = _shadowRoot.appendChild(cloned);
+      console.assert(child, `append cloned:${cloned} failed!`)
+      console.debug(`shadow root(${_shadowRoot}) appended a cloned child(${cloned}).`);
+    }
+  }
+  );
+
+#{search_result_container_id}(id=search_result_container_id, style="color: red;")
+  span(slot=search_result_name, class=search_result_name) Slotted search result:
+  li(slot=search_entries_name, class=search_entries_name) item 1
 
 script(type="module").
   import {exec_search, fetchData} from "/js/analyze-data.js";
@@ -27,12 +92,16 @@ script(type="module").
       throw Error(`No ${ignore_accents_id} !`);
     const ignore_accents = ignore_accents_element.checked ? true : false;
     console.log(`Ignore accents is set as: ${ignore_accents}`);
-    exec_search(fetchData(), input.value, {ignore_case, ignore_accents});
+  exec_search(fetchData(), input.value, {ignore_case, ignore_accents}, 
+   "#{search_result_container_map}",
+   "#{search_result_entry_map}");
   }
   else
     console.log(`No input text.`);
   }
+
   const submit_button = document.getElementById("#{submit_search_id}");
+
   if (!submit_button) {
     Error(`No submit_button`);
   }
@@ -40,66 +109,7 @@ script(type="module").
     submit_button.onclick = search;
     console.log(`submit_button.onclick is set to function search()`)
   }
-  
 
-div(id=search_input_id)
-  label(for=search_text_id) Enter search text:
-  input(id=search_text_id, type="text", name=search_text_id)
-  input(id=ignore_case_id, type="checkbox", checked)
-  label(for=ignore_case_id) Ignore case
-  input(id=ignore_accents_id, type="checkbox" checked)
-  label(for=ignore_accents_id) Ignore accents
-  button(id=submit_search_id, onClick="search()") Search
-// div(id=search_result_output_id)
-
-- var search_result_name = "search-result"
-- var search_entries_name = "search-entries"
-
-template(id=search_result_container_id)
-  div(id=search_result_container_id)
-    h2 
-      slot(name=search_result_name) (Search result)
-    ul.entries
-      slot(name=search_entries_name)
-
-template(id=search_result_entry_id)
-  li(class=search_result_entry_id)
-    a.title
-      slot(name='title')
-    time.date
-      slot(name='date') 
-    p(data-length=200).content
-      slot(name='content')
-    img.thumbnail
-
-script(type="module").
-  //- import {defineCustomElementFromTemplateId} from '/js/custom-element.js'
-  customElements.define(
-  "#{search_result_container_id}",
-  class extends HTMLElement {
-    constructor() {
-      super();
-      const template = document.getElementById("#{search_result_container_id}");
-      console.assert(template, `no template!`);
-      const templateContent = template.content;
-      console.assert(`no template content`);
-      const _shadowRoot = this.attachShadow({mode: 'open'});
-      console.assert(_shadowRoot, `attach shadow failed!`);
-      const cloned = templateContent.cloneNode(true);
-      console.assert(cloned, `clone node failed!`);
-      _shadowRoot.appendChild(cloned);
-      console.debug(`shadow root(${_shadowRoot}) appended a cloned child(${cloned}).`);
-    }
-  }
-  );
-
-#{search_result_container_id}(id=search_result_container_id, style="color: red;")
-  span(slot=search_result_name, class=search_result_name) Slotted search result:
-  li(slot=search_entries_name, class=search_entries_name) item 1
-
-
-// change search_result_name slot
-script(type="module").
   const search_result_container = document.querySelector("#{search_result_container_id}");
   console.assert(search_result_container, "Failed to get search_result_container!");
   const search_result = document.querySelector("#{search_result_container_id} > .#{search_result_name}");

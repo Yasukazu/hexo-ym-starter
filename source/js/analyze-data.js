@@ -174,14 +174,14 @@ function* analyzeData(document, query_str, {ignore_case = true, ignore_accents =
  * @param {Promise} fetch_data
  * @param {string} query
  * @param {{ignore_case: boolean, ignore_accents: boolean}}
- * @param {string} search_result_container_name
- * @param {string} search_entries_name
+ * @param {{id: string, heading: string, entries: string}}search_result_container_map
+ * @param {{id: string, title: string, date: string, content: string}} search_result_entry_map
  */
-function exec_search(fetch_data = fetchData(), query, { ignore_case = true, ignore_accents = true }, search_result_container_name, search_entries_name) {
-  const search_result_container = document.querySelector(search_result_container_name);
-  console.assert(search_result_container != null, `Failed to get ${search_result_container_name}!`);
-  const search_entries = document.querySelector(`${search_result_container_name} > .${search_entries_name}`);
-  console.assert(search_entries != null && search_entries != undefined, "Failed to get search_entries!");
+function exec_search(fetch_data = fetchData(), query, { ignore_case = true, ignore_accents = true }, search_result_container_map, search_result_entry_map) {
+  const search_result_container = document.querySelector(search_result_container_map.id);
+  console.assert(search_result_container instanceof HTMLElement, `Failed to get ${search_result_container_map.id}!`);
+  const search_entries = document.querySelector(`#${search_result_entry_map.id}`);
+  console.assert(search_entries instanceof HTMLElement, "Failed to get search_entries!");
   fetch_data.then(xml => {
     /** @type {{entry: Element, itemMap: ItemMap}} */
     for (const {entry, itemMap} of analyzeData(xml, query, { ignore_case, ignore_accents })) {
@@ -225,8 +225,8 @@ function exec_search(fetch_data = fetchData(), query, { ignore_case = true, igno
       const search_result = new SearchResult({entry, url, title, content, ii, length: '300'});
       const new_item = document.createElement('li');
       console.assert(new_item != null, "create li failed!");
-      new_item.setAttribute('slot', search_entries_name);
-      new_item.setAttribute('class', search_entries_name);
+      new_item.setAttribute('slot', search_result_entry_id);
+      new_item.setAttribute('class', search_result_entry_id);
       new_item.appendChild(result);
       const child = search_result_container?.appendChild(new_item);
       console.assert(child != null && child != undefined, `${child} added.`);
