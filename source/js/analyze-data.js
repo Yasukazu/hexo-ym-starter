@@ -1,66 +1,122 @@
 //@ts-check
 import {SearchFilter, walkTextNodes, IndexText, IndicesText} from "./walkTextNodes.js";
 import { SearchOutput } from "./search-output.js";
+import { SearchResult } from "./search-result.js";
 export {exec_search, analyzeData, fetchData, search_input, search_id, mark_text};
+
+class ItemMapElement {
+  /**
+   * @param { {entry: Element, url: string, title: string, content: string, ii: Array<number>, length: string} }
+   */
+  constructor({entry, url, title, content, ii, length} ) {
+    this.entry = entry;
+    this.url = url;
+ this.title = title;
+ this.content = content;
+ this.ii = ii;
+ this.length = length;
+  }
+}
+  
+/** @type {Map<string, { ii: Array<number>, nfkcText: string} >} */
+class ItemMap extends Map {
+  static test_items = ['title:text', 'content:html'];
 
   /**
    * Picks up query-matching entries
-   * @param {Document} document // XML
    * @param {string} query_str // Regex expression
-   * @param {SearchOutput} searchOutput
    * @param {{ignore_case: boolean, ignore_accents: boolean}}
-   * @yields {{entry: Element, itemMap: Map<string, {ii: Array<Array<num>>, nfkcText: string}>}} // IndicesText
    */
-  function* analyzeData(document, query_str, searchOutput, {ignore_case = true, ignore_accents = true}) {
-    const entries = document.getElementsByTagName('entry');
+  constructor(query_str, {ignore_case = true, ignore_accents = true}) {
+    super();
     let query = query_str.normalize('NFKD');
     const combining_chars_regex = ignore_accents ? /\p{Mark}/gu : '';
     if (ignore_accents) {
       query = query.replace(combining_chars_regex, '');
     }
     const searchFilter = new SearchFilter(query, {ignore_case, ignore_accents});
-    const filter = searchFilter.filter;// IndexText
-    for (const entry of entries) {
-      /** @type {Set<string>} */
-      const validSet = new Set();
-      /** @type {Map<string, { ii: Array<number>, nfkcText: string} >} */
-      const itemMap = new Map(); // IndicesText
-      const test_items = ['title:text', 'content:html'];
-      for (const item_type of test_items) { 
-        const [item, type] = item_type.split(':');
-        const content = entry.querySelector(item)?.textContent;
-        if (content) {
-          if (type == 'html') {
-            const content_tree = new DOMParser().parseFromString(content, "text/html");
-            if (!content_tree) {
-              throw Error(`Failed to parse from string text/html at entry:${entry.TEXT_NODE}`);
-            }
-            const bodyText = content_tree.body.textContent;
-            if (bodyText) {
-              const filter_result = filter(bodyText);
-              if (filter_result) {
-                itemMap.set(item, filter_result);
-              }
-            }
-            else
-              console.error(`content_tree.body.textContent not found!`);
+    this.filter = searchFilter.filter;// IndexText
+  }
+
+  /**
+   * 
+   * @param {Element} entry 
+   */
+  load(entry) {
+    for (const item_type of ItemMap.test_items) { 
+      const [item, type] = item_type.split(':');
+      const content = entry.querySelector(item)?.textContent;
+      if (content) {
+        if (type == 'html') {
+          const content_tree = new DOMParser().parseFromString(content, "text/html");
+          if (!content_tree) {
+            throw Error(`Failed to parse from string text/html at entry:${entry.TEXT_NODE}`);
           }
-          else {
-            const filter_result = filter(content); // indexText 
+          const bodyText = content_tree.body.textContent;
+          if (bodyText) {
+            const filter_result = this.filter(bodyText);
             if (filter_result) {
-                itemMap.set(item, filter_result);
+              this.set(item, filter_result);
             }
           }
+          else
+            console.error(`content_tree.body.textContent not found!`);
         }
         else {
-          console.info(`No content in ${item} of ${entry} !`);
+          const filter_result = this.filter(content); // indexText 
+          if (filter_result) {
+              this.set(item, filter_result);
+          }
         }
+        // check and fulfill
+        const url = entry.querySelector('url')?.textContent; // 2
+        if (!url)
+          throw Error("No 'url' in entry!");
+        console.debug(`Reached to get analyzeData : Url = ${url}\n`);
+        this.set('url', url);
+        if (!this.get('title')) {
+          console.debug(`No title key.`);
+          const _title = entry.querySelector('title')?.textContent;
+          if (_title) {
+            this.set('title', _title);
+          }
+          else
+            throw Error(`No title in entry!`);
+        }
+        if (!this.get('content')) {
+          content = contentMap.nfkcText;
+          ii = contentMap.ii;
+          const _content = mark_text(content, ii);
+          console.debug(` content: ${_content}`);
+        }
+        else {
+          console.debug(`No content.`);
+        }
+  
       }
+      else {
+        console.info(`No content in ${item} of ${entry} !`);
+      }
+  }
+
+}
+  /**
+   * Picks up query-matching entries
+   * @param {Document} document // XML
+   * @param {string} query_str // Regex expression
+   * @param {{ignore_case: boolean, ignore_accents: boolean}}
+   * @yields {entry: Element, itemMap: ItemMap} >} 
+   */
+  function* analyzeData(document, query_str, {ignore_case = true, ignore_accents = true}) {
+    const entries = document.getElementsByTagName('entry');
+    if (entries)
+    for (const entry of entries) {
+      const itemMap = new ItemMap(query_str, {ignore_case, ignore_accents});
+      itemMap.load(entry);
       if (itemMap.size > 0) {
         yield {entry, itemMap};
       }
     }
-  }
 
 /**
  * @param {Promise} fetch_data
@@ -75,9 +131,8 @@ function exec_search(fetch_data = fetchData(), query, { ignore_case = true, igno
   const search_entries = document.querySelector(`${search_result_container_name} > .${search_entries_name}`);
   console.assert(search_entries != null && search_entries != undefined, "Failed to get search_entries!");
   fetch_data.then(xml => {
-    const output = new SearchOutput();
-    /** @type {{entry: Element, itemMap: Map<string, {ii: Array<Array<number>>, nfkcText: string}>}} */
-    for (const {entry, itemMap} of analyzeData(xml, query, output, { ignore_case, ignore_accents })) {
+    /** @type {{entry: Element, itemMap: ItemMap}} */
+    for (const {entry, itemMap} of analyzeData(xml, query, { ignore_case, ignore_accents })) {
       const url = entry.querySelector('url')?.textContent; // 2
       if (!url)
         throw Error("No 'url' in entry!");
@@ -115,9 +170,7 @@ function exec_search(fetch_data = fetchData(), query, { ignore_case = true, igno
       }
       console.assert(title.length > 0 || content.length > 0, `title or content must not empty.`);
       console.assert((content.length == 0 && ii.length == 0)||(content.length > 0 && ii.length > 0), `content must accompany ii.`);
-      const result = output.makeSearchResult({entry, url, title, content, ii, length: '300'});
-
-
+      const search_result = new SearchResult({entry, url, title, content, ii, length: '300'});
       const new_item = document.createElement('li');
       console.assert(new_item != null, "create li failed!");
       new_item.setAttribute('slot', search_entries_name);

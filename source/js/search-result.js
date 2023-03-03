@@ -1,3 +1,4 @@
+export {SearchResult};
 class SearchResult {
   /**
    * @param { {entry: Element, url: string, title: string, content: string, ii: Array<number>, length: string} }
