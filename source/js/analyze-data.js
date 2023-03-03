@@ -18,8 +18,7 @@ class ItemMapElement {
   }
 }
   
-/** @type {Map<string, { ii: Array<number>, nfkcText: string} >} */
-class ItemMap extends Map {
+class ItemMap {
   static test_items = ['title:text', 'content:html'];
 
   /**
@@ -28,12 +27,14 @@ class ItemMap extends Map {
    * @param {{ignore_case: boolean, ignore_accents: boolean}}
    */
   constructor(query_str, {ignore_case = true, ignore_accents = true}) {
-    super();
+    /** @type {Map<string, {ii: number[], nfkcText: string}>} */
+    this.map = new Map();
     let query = query_str.normalize('NFKD');
     const combining_chars_regex = ignore_accents ? /\p{Mark}/gu : '';
     if (ignore_accents) {
       query = query.replace(combining_chars_regex, '');
     }
+    this.query = query;
     const searchFilter = new SearchFilter(query, {ignore_case, ignore_accents});
     this.filter = searchFilter.filter;// IndexText
   }
@@ -42,7 +43,7 @@ class ItemMap extends Map {
    * 
    * @param {Element} entry 
    */
-  load(entry) {
+  test(entry) {
     for (const item_type of ItemMap.test_items) { 
       const [item, type] = item_type.split(':');
       const content = entry.querySelector(item)?.textContent;
@@ -56,7 +57,7 @@ class ItemMap extends Map {
           if (bodyText) {
             const filter_result = this.filter(bodyText);
             if (filter_result) {
-              this.set(item, filter_result);
+              this.map.set(item, filter_result);
             }
           }
           else
@@ -65,39 +66,44 @@ class ItemMap extends Map {
         else {
           const filter_result = this.filter(content); // indexText 
           if (filter_result) {
-              this.set(item, filter_result);
+              this.map.set(item, filter_result);
           }
         }
-        // check and fulfill
-        const url = entry.querySelector('url')?.textContent; // 2
-        if (!url)
-          throw Error("No 'url' in entry!");
-        console.debug(`Reached to get analyzeData : Url = ${url}\n`);
-        this.set('url', url);
-        if (!this.get('title')) {
-          console.debug(`No title key.`);
-          const _title = entry.querySelector('title')?.textContent;
-          if (_title) {
-            this.set('title', _title);
-          }
-          else
-            throw Error(`No title in entry!`);
-        }
-        if (!this.get('content')) {
-          content = contentMap.nfkcText;
-          ii = contentMap.ii;
-          const _content = mark_text(content, ii);
-          console.debug(` content: ${_content}`);
-        }
-        else {
-          console.debug(`No content.`);
-        }
-  
       }
       else {
         console.info(`No content in ${item} of ${entry} !`);
       }
+    }
   }
+
+  /**
+   * @returns {string|undefined}
+   */
+  get title() {
+      return this.map.get('title')?.nfkcText;
+  }
+
+  /**
+   * @returns {string|undefined}
+   */
+  get content() {
+      return this.map.get('content')?.nfkcText;
+  }
+
+  /**
+   * @returns {boolean}
+   */
+  get isValid() {
+    return this.map.has('title') || this.map.has('content');
+  }
+
+  /**
+   * @returns {number[]|undefined}
+   */
+  get ii() {
+    return this.map.get('content')?.ii;
+  }
+
 
 }
   /**
@@ -108,12 +114,13 @@ class ItemMap extends Map {
    * @yields {entry: Element, itemMap: ItemMap} >} 
    */
   function* analyzeData(document, query_str, {ignore_case = true, ignore_accents = true}) {
-    const entries = document.getElementsByTagName('entry');
-    if (entries)
+    const entries = document.querySelectorAll('entry');
+    if (!entries)
+      throw Error(`No entries!`);
     for (const entry of entries) {
       const itemMap = new ItemMap(query_str, {ignore_case, ignore_accents});
-      itemMap.load(entry);
-      if (itemMap.size > 0) {
+      itemMap.test(entry);
+      if (itemMap.isValid) {
         yield {entry, itemMap};
       }
     }
