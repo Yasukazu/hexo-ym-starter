@@ -4,20 +4,7 @@ import { SearchOutput } from "./search-output.js";
 import { SearchResult } from "./search-result.js";
 export {exec_search, analyzeData, fetchData, search_input, search_id, mark_text};
 
-class ItemMapElement {
-  /**
-   * @param { {entry: Element, url: string, title: string, content: string, ii: Array<number>, length: string} }
-   */
-  constructor({entry, url, title, content, ii, length} ) {
-    this.entry = entry;
-    this.url = url;
- this.title = title;
- this.content = content;
- this.ii = ii;
- this.length = length;
-  }
-}
-  
+
 class ItemMap {
   static test_items = ['title:text', 'content:html'];
 

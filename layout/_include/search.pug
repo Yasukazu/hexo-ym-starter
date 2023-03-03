@@ -64,9 +64,12 @@ template(id=search_result_container_id)
 
 template(id=search_result_entry_id)
   li(class=search_result_entry_id)
-    a.title #[slot(name='title')]
-    time.date #[slot(name='date')]
-    p(data-length=200).content #[slot(name='content')]
+    a.title
+      slot(name='title')
+    time.date
+      slot(name='date') 
+    p(data-length=200).content
+      slot(name='content')
     img.thumbnail
 
 script(type="module").
