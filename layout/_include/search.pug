@@ -97,14 +97,27 @@ script(type="module").
 
 // change search_result_name slot
 script(type="module").
-    const search_result_container = document.querySelector("#{search_result_container_id}");
-    console.assert(search_result_container, "Failed to get search_result_container!");
-    const search_result = document.querySelector("#{search_result_container_id} > .#{search_result_name}");
+  const search_result_container = document.querySelector("#{search_result_container_id}");
+  console.assert(search_result_container, "Failed to get search_result_container!");
+  const search_result = document.querySelector("#{search_result_container_id} > .#{search_result_name}");
   console.assert(search_result, "Failed to get search_result!");
   search_result.innerText = "New search result.";
   const search_entries = document.querySelector("#{search_result_container_id} > .#{search_entries_name}");
   console.assert(search_entries, "Failed to get search_entries!");
   search_result_container.removeChild(search_entries);
   console.debug("Removed search_entries.")
-
+  let new_item = document.createElement('li');
+  console.assert(new_item, "create li failed!");
+  new_item.setAttribute('slot', '#{search_entries_name}');
+  new_item.setAttribute('class', '#{search_entries_name}');
+  new_item.innerText = 'new item 1';
+  let child = search_result_container.appendChild(new_item);
+  console.assert(child, "appended child 1");
+  new_item = document.createElement('li');
+  console.assert(new_item, "create li failed!");
+  new_item.setAttribute('slot', '#{search_entries_name}');
+  new_item.setAttribute('class', '#{search_entries_name}');
+  new_item.innerText = 'new item 2';
+  child = search_result_container.appendChild(new_item);
+  console.assert(child, "appended child 2");
   // search_result.innerHTML = "New search result.";

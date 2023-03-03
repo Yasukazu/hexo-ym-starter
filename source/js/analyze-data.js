@@ -66,9 +66,14 @@ export {exec_search, analyzeData, fetchData, search_input, search_id, mark_text}
  * @param {Promise} fetch_data
  * @param {string} query
  * @param {{ignore_case: boolean, ignore_accents: boolean}}
- * @returns {boolean}
+ * @param {string} search_result_container_name
+ * @param {string} search_entries_name
  */
-function exec_search(fetch_data = fetchData(), query, { ignore_case = true, ignore_accents = true }) {
+function exec_search(fetch_data = fetchData(), query, { ignore_case = true, ignore_accents = true }, search_result_container_name, search_entries_name) {
+  const search_result_container = document.querySelector(search_result_container_name);
+  console.assert(search_result_container != null, `Failed to get ${search_result_container_name}!`);
+  const search_entries = document.querySelector(`${search_result_container_name} > .${search_entries_name}`);
+  console.assert(search_entries != null && search_entries != undefined, "Failed to get search_entries!");
   fetch_data.then(xml => {
     const output = new SearchOutput();
     /** @type {{entry: Element, itemMap: Map<string, {ii: Array<Array<number>>, nfkcText: string}>}} */
@@ -109,14 +114,22 @@ function exec_search(fetch_data = fetchData(), query, { ignore_case = true, igno
         } */
       }
       console.assert(title.length > 0 || content.length > 0, `title or content must not empty.`);
-      console.assert((content.length == 0 && ii.length == 0)||(content.length > 0 && ii.length > 0), `content accompanies ii.`);
-      output.addSearchResult({entry, url, title, content, ii});
+      console.assert((content.length == 0 && ii.length == 0)||(content.length > 0 && ii.length > 0), `content must accompany ii.`);
+      const result = output.makeSearchResult({entry, url, title, content, ii, length: '300'});
+
+
+      const new_item = document.createElement('li');
+      console.assert(new_item != null, "create li failed!");
+      new_item.setAttribute('slot', search_entries_name);
+      new_item.setAttribute('class', search_entries_name);
+      new_item.appendChild(result);
+      const child = search_result_container?.appendChild(new_item);
+      console.assert(child != null && child != undefined, `${child} added.`);
     }
-    output.close();
+    // output.close();
   }, reason => {
     throw Error(`exec_search failed. reason:${reason}`);
   })
-  return true;
 }
 
 /**
