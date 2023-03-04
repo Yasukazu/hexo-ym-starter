@@ -115,7 +115,6 @@ class SearchOutput {
     if (!entry_output)
       throw Error(`Failed to import entry_output from template`);
     const entry_items = entry_output.querySelectorAll(`[class|='entry']`);
-    debugger;
     if (entry_items.length > 0) {
       for (const entry of entry_items) {
         if (entry instanceof Element) {
@@ -126,7 +125,7 @@ class SearchOutput {
               const item = split[1];
               switch(item) {
                 case 'url':
-                  entry.setAttribute('src', url);
+                  entry.setAttribute('href', url);
                   break;
                 case 'title':
                   entry.innerHTML = title;
@@ -143,12 +142,10 @@ class SearchOutput {
       }
     }
     const slot_element = entry_output.querySelector(`[class='${this.search_result_entry_map.id}']`);
-    debugger;
     if (slot_element instanceof Element)
       slot_element.setAttribute('slot', this.search_result_container_map.entries);
     else
       throw Error(`unable to set slot: ${this.search_result_container_map.entries}`)
-    debugger;
     return entry_output;
     /*
     for (const [key, value] of Object.entries(this.search_result_entry_map)) {

@@ -216,9 +216,7 @@ function exec_search(fetch_data = fetchData(), query, { ignore_case = true, igno
       else {
         console.debug(`No content.`);
       }
-      debugger;
       const search_result = search_output.getSearchResult(entry, output);
-      debugger;
       const result = search_output.search_result_container.appendChild(search_result);
       console.assert(result instanceof Element, `search result`);
     }
