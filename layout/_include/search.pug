@@ -55,7 +55,26 @@ script(type="module").
     constructor() {
       super();
       const template = document.getElementById("#{search_result_container_map[id]}");
-      console.assert(template, `no template!`);
+      console.assert(template instanceof HTMLElement, `no template!`);
+      const templateContent = template.content;
+      console.assert(`no template content`);
+      const _shadowRoot = this.attachShadow({mode: 'open'});
+      console.assert(_shadowRoot, `attach shadow failed!`);
+      const cloned = templateContent.cloneNode(true);
+      console.assert(cloned, `clone node failed!`);
+      const child = _shadowRoot.appendChild(cloned);
+      console.assert(child, `append cloned:${cloned} failed!`)
+      console.debug(`shadow root(${_shadowRoot}) appended a cloned child(${cloned}).`);
+    }
+  }
+  );
+  customElements.define(
+  "#{search_result_entry_map[id]}",
+  class extends HTMLElement {
+    constructor() {
+      super();
+      const template = document.getElementById("#{search_result_entry_map[id]}");
+      console.assert(template instanceof HTMLElement, `no template!`);
       const templateContent = template.content;
       console.assert(`no template content`);
       const _shadowRoot = this.attachShadow({mode: 'open'});
@@ -110,27 +129,23 @@ script(type="module").
     console.log(`submit_button.onclick is set to function search()`)
   }
 
-  const search_result_container = document.querySelector("#{search_result_container_id}");
+  const search_result_container = document.querySelector("#{search_result_container_map[id]}");
   console.assert(search_result_container, "Failed to get search_result_container!");
-  const search_result = document.querySelector("#{search_result_container_id} > .#{search_result_name}");
-  console.assert(search_result, "Failed to get search_result!");
-  search_result.innerText = "New search result.";
-  const search_entries = document.querySelector("#{search_result_container_id} > .#{search_entries_name}");
-  console.assert(search_entries, "Failed to get search_entries!");
+  const search_result_heading = document.querySelector("#{search_result_container_map[heading]}");
+  console.assert(search_result_heading instanceof HTMLElement, "Failed to get search_result_heading!");
+  search_result_heading.innerText = "New search result.";
+  const search_entries = document.querySelector("#{search_result_container_map[entries]");
+  console.assert(search_entries instanceof HTMLElement, "Failed to get search_entries!");
   search_result_container.removeChild(search_entries);
   console.debug("Removed search_entries.")
-  let new_item = document.createElement('li');
-  console.assert(new_item, "create li failed!");
-  new_item.setAttribute('slot', '#{search_entries_name}');
-  new_item.setAttribute('class', '#{search_entries_name}');
-  new_item.innerText = 'new item 1';
-  let child = search_result_container.appendChild(new_item);
-  console.assert(child, "appended child 1");
-  new_item = document.createElement('li');
-  console.assert(new_item, "create li failed!");
-  new_item.setAttribute('slot', '#{search_entries_name}');
-  new_item.setAttribute('class', '#{search_entries_name}');
-  new_item.innerText = 'new item 2';
-  child = search_result_container.appendChild(new_item);
-  console.assert(child, "appended child 2");
-  // search_result.innerHTML = "New search result.";
+  let new_li = document.createElement('li');
+  console.assert(new_li instanceof HTMLElement, "create li failed!");
+  new_li.setAttribute('slot', '#{search_entries_name}');
+  new_li.setAttribute('class', '#{search_entries_name}');
+  let new_entry = document.createElement("#{search_result_entry_map[id]}");
+  console.assert(new_entry instanceof HTMLElement, `new entry failed.`);
+  let new_li_entry = new_li.appendChild(new_entry);
+  console.assert(new_li_entry instanceof HTMLElement, `new_li_entry`);
+  let child = search_result_container.appendChild(new_li);
+  console.assert(child instanceof HTMLElement, "appended child 1");
+  console.info(`search.pug script finish.`)
