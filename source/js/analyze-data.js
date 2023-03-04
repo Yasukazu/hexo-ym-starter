@@ -178,15 +178,14 @@ function* analyzeData(document, query_str, {ignore_case = true, ignore_accents =
  * @param {{id: string, title: string, date: string, content: string}} search_result_entry_map
  */
 function exec_search(fetch_data = fetchData(), query, { ignore_case = true, ignore_accents = true }, search_result_container_map, search_result_entry_map) {
-  const output = new SearchOutput(search_result_container_map, search_result_entry_map);
 
-  //-
   const search_entries = document.querySelector(`#${search_result_entry_map.id}`);
   console.assert(search_entries instanceof HTMLElement, "Failed to get search_entries!");
+  const search_output = new SearchOutput(search_result_container_map, search_result_entry_map);
   fetch_data.then(xml => {
     /** @type {{entry: Element, itemMap: ItemMap}} */
     for (const {entry, itemMap} of analyzeData(xml, query, { ignore_case, ignore_accents })) {
-      const output = {url: '', title: '', content: '', date: ''};
+      const output = {url: '', title: '', content: ''};
       const url = entry.querySelector('url')?.textContent; // 2
       if (url)
         output.url = url;
@@ -217,13 +216,13 @@ function exec_search(fetch_data = fetchData(), query, { ignore_case = true, igno
       else {
         console.debug(`No content.`);
       }
-      console.assert(title.length > 0 || content.length > 0, `title or content must not empty.`);
-      console.assert((content.length == 0 && ii.length == 0)||(content.length > 0 && ii.length > 0), `content must accompany ii.`);
-      const search_result = new SearchResult({entry, url, title, content, ii, length: '300'});
-
-      console.info(`search.pug script finish.`)
+      debugger;
+      const search_result = search_output.getSearchResult(entry, output);
+      debugger;
+      const result = search_output.search_result_container.appendChild(search_result);
+      console.assert(result instanceof Element, `search result`);
     }
-    // output.close();
+    // search_output.close();
   }, reason => {
     throw Error(`exec_search failed. reason:${reason}`);
   })

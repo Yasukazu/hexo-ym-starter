@@ -9,27 +9,39 @@ class SearchOutput {
    * @param {{id: string, title: string, date: string, content: string}} search_result_entry_map
    */
   constructor(search_result_container_map, search_result_entry_map) {
-    debugger;
-    const search_result_container = document.querySelector(search_result_container_map.id);
-    if (search_result_container instanceof HTMLElement) {
-      // get heading slot 
-      const old_heading = search_result_container.querySelector(`[slot=${search_result_container_map.heading}]`);
-      if (old_heading instanceof Element) {
-        // remove old heading
-        const result = search_result_container.removeChild(old_heading);
-        if (result instanceof Element) {
-          console.debug(`old_heading removed : ${result}`);
-        }
-      }
+    this.search_result_container_map = search_result_container_map;
+    this.search_result_entry_map = search_result_entry_map;
+    this.search_result_entry = document.querySelector(`#${search_result_entry_map.id}`)?.content;
+    if (!this.search_result_entry) {
+      throw Error(`Unable to get content from a template`);
     }
-    const span = document.createElement('span');
-    console.assert(span instanceof HTMLElement, `spa
-    n fail`);
-    span.setAttribute('slot', `${search_result_container_map.heading}`);
-    span.innerText = "New search result heading by SearchOutput";
-    const span_child = search_result_container?.appendChild(span);
-    console.assert(span_child instanceof HTMLElement, `span child`);
-
+    this.search_result_container = document.querySelector(search_result_container_map.id);
+    if (!(this.search_result_container instanceof HTMLElement))
+      throw Error(`${search_result_container_map.id} is unavailable`);
+    // get heading slot 
+    let _query = `[slot=${search_result_container_map.heading}]`;
+    let old_element = this.search_result_container.querySelector(_query);
+    if(old_element instanceof Element) {
+      // remove old heading
+      const removed = this.search_result_container.removeChild(old_element);
+      console.assert(removed instanceof Element, `old_heading removed : ${removed}`);
+    }
+    // try to add new heading
+    let new_element = document.createElement('span');
+    if (new_element instanceof Element) {
+      new_element.setAttribute('slot', this.search_result_container_map.heading);
+      new_element.innerText = 'newly set text by SearchOutput';
+      const result = this.search_result_container.appendChild(new_element);
+      console.assert(result instanceof Element, `${new_element}`)
+    }
+    // remove old entries li
+    _query = `[slot=${search_result_container_map.entries}]`;
+    old_element = this.search_result_container.querySelector(_query);
+    if (old_element instanceof Element) {
+      const removed = this.search_result_container.removeChild(old_element);
+      console.assert(removed instanceof Element, `${removed}`);
+    }
+    /*
     let new_li = document.createElement('li');
     console.assert(new_li instanceof HTMLElement, "create li failed!");
     new_li.setAttribute('slot', '#{search_entries_name}');
@@ -70,6 +82,7 @@ class SearchOutput {
     this.search_result_entry_template = document.querySelector(search_result_entry_template);
     if (!this.search_result_entry_template)
       throw Error(`!No template selector: ${search_result_entry_template}!`);
+    */
   }
 
   close() {
@@ -90,14 +103,63 @@ class SearchOutput {
   }
 
   /**
-   * @param { {entry: Element, url: string, title: string, content: string, ii: Array<number>} }
+   * @param { Element} entry
+   * @param { {url: string, title: string, content: string} }
+   * @returns {DocumentFragment}
    */
-  addSearchResult({ entry, url, title, content, ii }) {
-    if (!this.search_result_entries)
-      throw Error(`No built search_result_entries !`);
-    const entry_output = document.importNode(this.search_result_entry_template.content, true);
+  getSearchResult(entry, {url, title, content}) {
+    if (!(this.search_result_entry instanceof DocumentFragment)) {
+      throw Error(`search_result_entry is not a DocumentFragment`);
+    }
+    const entry_output = document.importNode(this.search_result_entry, true);
     if (!entry_output)
-      console.error(`Failed to import entry_output from template: ${this.search_result_entry_template}!`);
+      throw Error(`Failed to import entry_output from template`);
+    const entry_items = entry_output.querySelectorAll(`[class|='entry']`);
+    debugger;
+    if (entry_items.length > 0) {
+      for (const entry of entry_items) {
+        if (entry instanceof Element) {
+          const cls = entry.getAttribute('class');
+          if (cls) {
+            const split = cls.split('-');
+            if (split.length > 1) {
+              const item = split[1];
+              switch(item) {
+                case 'url':
+                  entry.setAttribute('src', url);
+                  break;
+                case 'title':
+                  entry.innerHTML = title;
+                  break;
+                case 'content':
+                  entry.innerHTML = content;
+                  break;
+                default:
+                  break;
+              }
+            }
+          }
+        }
+      }
+    }
+    const slot_element = entry_output.querySelector(`[class='${this.search_result_entry_map.id}']`);
+    debugger;
+    if (slot_element instanceof Element)
+      slot_element.setAttribute('slot', this.search_result_container_map.entries);
+    else
+      throw Error(`unable to set slot: ${this.search_result_container_map.entries}`)
+    debugger;
+    return entry_output;
+    /*
+    for (const [key, value] of Object.entries(this.search_result_entry_map)) {
+      if (key != 'id') {
+        const element = entry_output.querySelector(value);
+        if (element instanceof Element) {
+
+        }
+      }
+
+    }
     const ar = entry_output.querySelector('a.title');
     if (!ar)
       throw Error("No 'a' in template!");
@@ -173,6 +235,7 @@ class SearchOutput {
     }
     else
       console.error(`No entry output '.content'`);
+    */
   }
 
   /**

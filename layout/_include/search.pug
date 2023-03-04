@@ -25,7 +25,7 @@ div(id=search_input_id)
   const search_result_container_entries = search_result_container_map.entries 
   const search_result_name = "search-result"
   const search_entries_name = "search-entries"
-  const search_result_entry_map = {id: "search-result-entry", title: 'entry-title', date: 'entry-date', content: 'entry-content'}
+  const search_result_entry_map = {id: "search-result-entry", url: 'entry-url', title: 'entry-title', date: 'entry-date', content: 'entry-content'}
   const search_result_entry_id = search_result_entry_map.id;
 
 template(id=search_result_container_map.id)
@@ -37,7 +37,8 @@ template(id=search_result_container_map.id)
 
 template(id=search_result_entry_map.id)
   li(class=search_result_entry_map.id)
-    a(class=search_result_entry_map.title)
+    a(class=search_result_entry_map.url)
+      span(class=search_result_entry_map.title)
     time(class=search_result_entry_map.date)
     p(class=search_result_entry_map.content, data-length=200)
     img.thumbnail
