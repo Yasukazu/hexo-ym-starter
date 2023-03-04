@@ -20,60 +20,35 @@ div(id=search_input_id)
 
 -
   const search_result_container_map = {id: "search-result-container", heading: "heading", entries: "entries"}
-  const search_result_container_id = search_result_container_map['id'] 
-  const search_result_container_heading = search_result_container_map['heading'] 
-  const search_result_container_entries = search_result_container_map['entries'] 
+  const search_result_container_id = search_result_container_map.id 
+  const search_result_container_heading = search_result_container_map.heading 
+  const search_result_container_entries = search_result_container_map.entries 
   const search_result_name = "search-result"
   const search_entries_name = "search-entries"
-  const search_result_entry_map = {id: "search-result-entry", title: 'a', date: 'time', content: 'p'}
-  const search_result_entry_id = "search-result-entry"
-  const a_title = "a-title"
-  const time_date = "time-date"
-  const p_content = "p-content"
+  const search_result_entry_map = {id: "search-result-entry", title: 'entry-title', date: 'entry-date', content: 'entry-content'}
+  const search_result_entry_id = search_result_entry_map.id;
 
-template(id=search_result_container_map['id'])
-  div(id=search_result_container_map['id'])
-    h2(class=search_result_container_map['heading'])
-      slot(name=search_result_container_map['heading']) (Search result)
-    ul(class=search_result_container_map['entries'])
-      slot(name=search_result_container_map['entries'])
+template(id=search_result_container_map.id)
+  div(id=search_result_container_map.id)
+    h2(class=search_result_container_map.heading)
+      slot(name=search_result_container_map.heading) (Search result)
+    ul(class=search_result_container_map.entries)
+      slot(name=search_result_container_map.entries)
 
-template(id=search_result_entry_id)
-  li(class=search_result_entry_id)
-    a(class=a_title)
-      slot(name=a_title)
-    time(class=time_date)
-      slot(name=time_date)
-    p(data-length=200 class=p_content)
-      slot(name=p_content)
+template(id=search_result_entry_map.id)
+  li(class=search_result_entry_map.id)
+    a(class=search_result_entry_map.title)
+    time(class=search_result_entry_map.date)
+    p(class=search_result_entry_map.content, data-length=200)
     img.thumbnail
 
 script(type="module").
   customElements.define(
-  "#{search_result_container_map['id']}",
+  "#{search_result_container_map.id}",
   class extends HTMLElement {
     constructor() {
       super();
-      const template = document.getElementById("#{search_result_container_map['id']}");
-      console.assert(template instanceof HTMLElement, `no template!`);
-      const templateContent = template.content;
-      console.assert(`no template content`);
-      const _shadowRoot = this.attachShadow({mode: 'open'});
-      console.assert(_shadowRoot, `attach shadow failed!`);
-      const cloned = templateContent.cloneNode(true);
-      console.assert(cloned, `clone node failed!`);
-      const child = _shadowRoot.appendChild(cloned);
-      console.assert(child, `append cloned:${cloned} failed!`)
-      console.debug(`shadow root(${_shadowRoot}) appended a cloned child(${cloned}).`);
-    }
-  }
-  );
-  customElements.define(
-  "#{search_result_entry_map['id']}",
-  class extends HTMLElement {
-    constructor() {
-      super();
-      const template = document.getElementById("#{search_result_entry_map['id']}");
+      const template = document.getElementById("#{search_result_container_map.id}");
       console.assert(template instanceof HTMLElement, `no template!`);
       const templateContent = template.content;
       console.assert(`no template content`);
@@ -88,9 +63,10 @@ script(type="module").
   }
   );
 
-#{search_result_container_map['id']}(id=search_result_container_map['id'], style="color: red;")
-  span(slot=search_result_container_map['heading'], class=search_result_container_map['heading']) Slotted search result:
-  li(slot=search_result_container_map['entries'], class=search_result_container_map['entries']) entry 1
+
+#{search_result_container_map.id}(id=search_result_container_map.id, style="color: red;")
+  span(slot=search_result_container_map.heading, class=search_result_container_map.heading) Slotted search result:
+  // li(slot=search_result_container_map.entries, class=search_result_container_map.entries) entry 1
 
 script(type="module").
   import {exec_search, fetchData} from "/js/analyze-data.js";
@@ -112,8 +88,13 @@ script(type="module").
     const ignore_accents = ignore_accents_element.checked ? true : false;
     console.log(`Ignore accents is set as: ${ignore_accents}`);
   exec_search(fetchData(), input.value, {ignore_case, ignore_accents}, 
-   "#{search_result_container_map}",
-   "#{search_result_entry_map}");
+   {id: "#{search_result_container_map.id}",
+    heading: "#{search_result_container_map.heading}",
+    entries: "#{search_result_container_map.entries}"},
+    {id: "#{search_result_entry_map.id}",
+     title: "#{search_result_entry_map.title}",
+     date: "#{search_result_entry_map.date}",
+     content: "#{search_result_entry_map.content}"});
   }
   else
     console.log(`No input text.`);
@@ -129,27 +110,39 @@ script(type="module").
     console.log(`submit_button.onclick is set to function search()`)
   }
 
-  const search_result_container = document.querySelector("#{search_result_container_map['id']}");
+  const search_result_container = document.querySelector("#{search_result_container_map.id}");
   console.assert(search_result_container, "Failed to get search_result_container!");
   const span = document.createElement('span');
   console.assert(span instanceof HTMLElement, `spa
   n fail`);
-  span.setAttribute('slot', "#{search_result_container_map['heading']}");
+  span.setAttribute('slot', "#{search_result_container_map.heading}");
   span.innerText = "New search result heading";
   const span_child = search_result_container.appendChild(span);
   console.assert(span_child instanceof HTMLElement, `span child`);
-  const search_entries = search_result_container.querySelector(".#{search_result_container_map['entries']}");
-  console.assert(search_entries instanceof HTMLElement, "Failed to get search_entries!");
-  // search_result_container.removeChild(search_entries);
-  // console.debug("Removed search_entries.")
+  // const search_entries = search_result_container.querySelector(".#{search_result_container_map.entries}");
+  // console.assert(search_entries instanceof HTMLElement, "Failed to get search_entries!");
   let new_li = document.createElement('li');
   console.assert(new_li instanceof HTMLElement, "create li failed!");
   new_li.setAttribute('slot', '#{search_entries_name}');
   new_li.setAttribute('class', '#{search_entries_name}');
-  let new_entry = document.createElement("#{search_result_entry_map['id']}");
-  console.assert(new_entry instanceof HTMLElement, `new entry failed.`);
-  let new_li_entry = new_li.appendChild(new_entry);
-  console.assert(new_li_entry instanceof HTMLElement, `new_li_entry`);
-  let child = search_result_container.appendChild(new_li);
+  const template = document.querySelector("##{search_result_entry_map.id}");
+  console.assert(template instanceof HTMLElement, `template`);
+  const node = document.importNode(template.content, true)?.children[0];
+  console.assert(node, `node`);
+  for(const [key, value] of Object.entries({id: "#{search_result_entry_map.id}",
+     title: "#{search_result_entry_map.title}",
+     date: "#{search_result_entry_map.date}",
+     content: "#{search_result_entry_map.content}"})) {
+      if (key != 'id') {
+        const sel = `[class='${value}']`;
+        const elem = node.querySelector(sel);
+        console.assert(elem, `element`);
+        elem.innerText = value;
+      }
+     }
+  const items = node.querySelectorAll("[class|='entry']");
+  node.setAttribute('slot', '#{search_result_container_map.entries}');
+  node.setAttribute('class', '#{search_result_container_map.entries}');
+  let child = search_result_container.appendChild(node);
   console.assert(child instanceof HTMLElement, "appended child 1");
   console.info(`search.pug script finish.`)
