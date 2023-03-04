@@ -5,10 +5,57 @@ export { SearchOutput };
 class SearchOutput {
   /**
    * check container element of #search
-   * @param { {search_result_output: string, search_result_container_template: string, search_result_entry_template: string, search_result_entries: string } }
+   * @param {{id: string, heading: string, entries: string}}search_result_container_map
+   * @param {{id: string, title: string, date: string, content: string}} search_result_entry_map
    */
-  constructor({ search_result_output = "#search-result-output", search_result_container_template = "template#search-result-container", search_result_entry_template = "template#search-result-entry", search_result_entries = ".entries" } = {}) {
-    this._search_result_output = document.querySelector(search_result_output);
+  constructor(search_result_container_map, search_result_entry_map) {
+    debugger;
+    const search_result_container = document.querySelector(search_result_container_map.id);
+    if (search_result_container instanceof HTMLElement) {
+      // get heading slot 
+      const old_heading = search_result_container.querySelector(`[slot=${search_result_container_map.heading}]`);
+      if (old_heading instanceof Element) {
+        // remove old heading
+        const result = search_result_container.removeChild(old_heading);
+        if (result instanceof Element) {
+          console.debug(`old_heading removed : ${result}`);
+        }
+      }
+    }
+    const span = document.createElement('span');
+    console.assert(span instanceof HTMLElement, `spa
+    n fail`);
+    span.setAttribute('slot', `${search_result_container_map.heading}`);
+    span.innerText = "New search result heading by SearchOutput";
+    const span_child = search_result_container?.appendChild(span);
+    console.assert(span_child instanceof HTMLElement, `span child`);
+
+    let new_li = document.createElement('li');
+    console.assert(new_li instanceof HTMLElement, "create li failed!");
+    new_li.setAttribute('slot', '#{search_entries_name}');
+    new_li.setAttribute('class', '#{search_entries_name}');
+    const template = document.querySelector("##{search_result_entry_map.id}");
+    console.assert(template instanceof HTMLElement, `template`);
+    const node = document.importNode(template.content, true)?.children[0];
+    console.assert(node, `node`);
+    for(const [key, value] of Object.entries({id: "#{search_result_entry_map.id}",
+       title: "#{search_result_entry_map.title}",
+       date: "#{search_result_entry_map.date}",
+       content: "#{search_result_entry_map.content}"})) {
+        if (key != 'id') {
+          const sel = `[class='${value}']`;
+          const elem = node.querySelector(sel);
+          console.assert(elem, `element`);
+          elem.innerText = value;
+        }
+       }
+    const items = node.querySelectorAll("[class|='entry']");
+    node.setAttribute('slot', '#{search_result_container_map.entries}');
+    node.setAttribute('class', '#{search_result_container_map.entries}');
+    let child = search_result_container.appendChild(node);
+    console.assert(child instanceof HTMLElement, "appended child 1");
+
+    const _search_result_output = document.querySelector(search_result_output);
     if (!this._search_result_output)
       Error(`No element selector: ${search_result_output} !`);
     const _search_result_container_template = document.querySelector(search_result_container_template);

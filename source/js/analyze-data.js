@@ -1,8 +1,8 @@
 //@ts-check
-import {SearchFilter, walkTextNodes, IndexText, IndicesText} from "./walkTextNodes.js";
-import { SearchOutput } from "./search-output.js";
+import {SearchFilter} from "./walkTextNodes.js";
 import { SearchResult } from "./search-result.js";
-export {exec_search, analyzeData, fetchData, search_input, search_id, mark_text};
+import { SearchOutput } from "./search-output.js";
+export {exec_search, analyzeData, fetchData, mark_text};
 
 
 class ItemMap {
@@ -178,58 +178,50 @@ function* analyzeData(document, query_str, {ignore_case = true, ignore_accents =
  * @param {{id: string, title: string, date: string, content: string}} search_result_entry_map
  */
 function exec_search(fetch_data = fetchData(), query, { ignore_case = true, ignore_accents = true }, search_result_container_map, search_result_entry_map) {
-  const search_result_container = document.querySelector(search_result_container_map.id);
-  console.assert(search_result_container instanceof HTMLElement, `Failed to get ${search_result_container_map.id}!`);
+  const output = new SearchOutput(search_result_container_map, search_result_entry_map);
+
+  //-
   const search_entries = document.querySelector(`#${search_result_entry_map.id}`);
   console.assert(search_entries instanceof HTMLElement, "Failed to get search_entries!");
   fetch_data.then(xml => {
     /** @type {{entry: Element, itemMap: ItemMap}} */
     for (const {entry, itemMap} of analyzeData(xml, query, { ignore_case, ignore_accents })) {
+      const output = {url: '', title: '', content: '', date: ''};
       const url = entry.querySelector('url')?.textContent; // 2
-      if (!url)
+      if (url)
+        output.url = url;
+      else
         throw Error("No 'url' in entry!");
-      console.debug(`Reached to get analyzeData : Url = ${url}\n`);
       let title = '';
-      const titleMap = itemMap.get('title');
+      const titleMap = itemMap.title;
       if (titleMap) {
-        const {ii, nfkcText} = titleMap; // const {indices, text} = titleIndicesText.join;
-        title = nfkcText;
-        console.debug(` title: ${title}`);
+        output.title = titleMap;
       }
       else {
         console.debug(`No title key.`);
         const _title = entry.querySelector('title')?.textContent;
         if (_title) {
-          title = _title;
+          output.title = _title;
         }
       }
       let content = '';
-      /** @type {Array<number>} */
-      let ii = [];
-      const contentMap = itemMap.get('content');
+      const contentMap = itemMap.content;
       if (contentMap) {
-        content = contentMap.nfkcText;
-        ii = contentMap.ii;
-        const _content = mark_text(content, ii);
-        console.debug(` content: ${_content}`);
+        const ii = itemMap.ii;
+        if (ii) {
+          output.content = mark_text(content, ii);
+        }
+        else
+          output.content = contentMap;
       }
       else {
         console.debug(`No content.`);
-        /* const _content = entry.querySelector('content')?.textContent;
-        if (_content) {
-          content = _content;
-        } */
       }
       console.assert(title.length > 0 || content.length > 0, `title or content must not empty.`);
       console.assert((content.length == 0 && ii.length == 0)||(content.length > 0 && ii.length > 0), `content must accompany ii.`);
       const search_result = new SearchResult({entry, url, title, content, ii, length: '300'});
-      const new_item = document.createElement('li');
-      console.assert(new_item != null, "create li failed!");
-      new_item.setAttribute('slot', search_result_entry_id);
-      new_item.setAttribute('class', search_result_entry_id);
-      new_item.appendChild(result);
-      const child = search_result_container?.appendChild(new_item);
-      console.assert(child != null && child != undefined, `${child} added.`);
+
+      console.info(`search.pug script finish.`)
     }
     // output.close();
   }, reason => {
@@ -288,44 +280,4 @@ function fetchData(fetchUrl = fetch_path) {
     }
     xhr.send(null)
   })
-}
-
-/**
- * 
- * @param {Promise} fetch_data 
- * @param {{submit_search_id: string, search_text_id: string, search_result_output_id: string, ignore_case_id: string, ignore_accents_id: string}} 
- */
-function search_input(fetch_data = fetchData(), { submit_search_id, search_text_id, search_result_output_id, ignore_case_id, ignore_accents_id }) {
-  const submit_search_button = document.getElementById(submit_search_id);
-  const search_text_input = document.getElementById(search_text_id);
-  const search_result_output = document.querySelector(search_result_output_id);
-  if (submit_search_button && search_text_input && search_result_output) {
-      let queryWord = search_text_input.value;
-      if (queryWord) {
-        const ignore_case = document.querySelector('#' + ignore_case_id)?.checked ? true : false;
-        const ignore_accents = document.querySelector('#' + ignore_accents_id)?.checked ? true : false;
-        exec_search(fetch_data, queryWord, { ignore_case, ignore_accents });
-      }
-  }
-  else
-    throw Error(`!No ${submit_search_id}, ${search_text_id} and ${search_result_output_id}`);
-}      
-
-/**
- * 
- * @param {{search_text_id: string, ignore_case_id: string, ignore_accents_id: string}} 
- */
-function search_id({search_text_id, ignore_case_id, ignore_accents_id}) {
-  const input = document.getElementById(search_text_id);
-  if (!input)
-    throw Error(`No ${search_text_id}`);
-  if (input.value) {
-    const ignore_case_element = document.getElementById(ignore_case_id);
-    const ignore_case = ignore_case_element?.checked ? true : false;
-    const ignore_accents_element = document.getElementById(ignore_accents_id);
-    const ignore_accents = ignore_accents_element?.checked ? true : false;
-    exec_search(fetchData(), input.value, {ignore_case, ignore_accents});
-  }
-  else
-    console.debug(`No input value.`);
 }

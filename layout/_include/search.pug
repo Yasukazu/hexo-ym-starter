@@ -66,7 +66,7 @@ script(type="module").
 
 #{search_result_container_map.id}(id=search_result_container_map.id, style="color: red;")
   span(slot=search_result_container_map.heading, class=search_result_container_map.heading) Slotted search result:
-  // li(slot=search_result_container_map.entries, class=search_result_container_map.entries) entry 1
+  li(slot=search_result_container_map.entries, class=search_result_container_map.entries) entry 1
 
 script(type="module").
   import {exec_search, fetchData} from "/js/analyze-data.js";
@@ -109,40 +109,3 @@ script(type="module").
     submit_button.onclick = search;
     console.log(`submit_button.onclick is set to function search()`)
   }
-
-  const search_result_container = document.querySelector("#{search_result_container_map.id}");
-  console.assert(search_result_container, "Failed to get search_result_container!");
-  const span = document.createElement('span');
-  console.assert(span instanceof HTMLElement, `spa
-  n fail`);
-  span.setAttribute('slot', "#{search_result_container_map.heading}");
-  span.innerText = "New search result heading";
-  const span_child = search_result_container.appendChild(span);
-  console.assert(span_child instanceof HTMLElement, `span child`);
-  // const search_entries = search_result_container.querySelector(".#{search_result_container_map.entries}");
-  // console.assert(search_entries instanceof HTMLElement, "Failed to get search_entries!");
-  let new_li = document.createElement('li');
-  console.assert(new_li instanceof HTMLElement, "create li failed!");
-  new_li.setAttribute('slot', '#{search_entries_name}');
-  new_li.setAttribute('class', '#{search_entries_name}');
-  const template = document.querySelector("##{search_result_entry_map.id}");
-  console.assert(template instanceof HTMLElement, `template`);
-  const node = document.importNode(template.content, true)?.children[0];
-  console.assert(node, `node`);
-  for(const [key, value] of Object.entries({id: "#{search_result_entry_map.id}",
-     title: "#{search_result_entry_map.title}",
-     date: "#{search_result_entry_map.date}",
-     content: "#{search_result_entry_map.content}"})) {
-      if (key != 'id') {
-        const sel = `[class='${value}']`;
-        const elem = node.querySelector(sel);
-        console.assert(elem, `element`);
-        elem.innerText = value;
-      }
-     }
-  const items = node.querySelectorAll("[class|='entry']");
-  node.setAttribute('slot', '#{search_result_container_map.entries}');
-  node.setAttribute('class', '#{search_result_container_map.entries}');
-  let child = search_result_container.appendChild(node);
-  console.assert(child instanceof HTMLElement, "appended child 1");
-  console.info(`search.pug script finish.`)
