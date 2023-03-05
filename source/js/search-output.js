@@ -25,14 +25,7 @@ class SearchOutput {
       const removed = this.search_result_container.removeChild(old_element);
       console.assert(removed instanceof Element, `old_heading removed : ${removed}`);
     }
-    // try to add new heading
-    let new_element = document.createElement('span');
-    if (new_element instanceof Element) {
-      new_element.setAttribute('slot', this.search_result_container_map.heading);
-      new_element.innerText = 'newly set text by SearchOutput';
-      const result = this.search_result_container.appendChild(new_element);
-      console.assert(result instanceof Element, `${new_element}`)
-    }
+
     // remove old entries li
     _query = `[slot=${search_result_container_map.entries}]`;
     old_element = this.search_result_container.querySelector(_query);
@@ -40,6 +33,7 @@ class SearchOutput {
       const removed = this.search_result_container.removeChild(old_element);
       console.assert(removed instanceof Element, `${removed}`);
     }
+    this.added_count = 0;
   }
 
   /**
@@ -83,12 +77,32 @@ class SearchOutput {
     // const slot_element = entry_output.querySelector(`[class='${this.search_result_entry_map.id}']`);
     const slot_element = entry_output.children[0];
     console.assert(slot_element instanceof HTMLElement);
-    debugger;
     const slot_attribute = slot_element.getAttribute('slot');
     console.assert(slot_attribute === this.search_result_container_map.entries);
-    const result = this.search_result_container.appendChild(entry_output);
-    console.assert(result instanceof DocumentFragment, `${entry_output}`)
+    let appended = this.search_result_container.appendChild(entry_output);
+    console.assert(appended instanceof DocumentFragment, `${entry_output}`)
+    this.added_count += 1;
+
   }
+
+  /**
+   * @returns {number}
+   *  */ 
+  get count() {return this.added_count;}
+
+  /**
+   * Add new heading
+   * @param {string} msg 
+   */
+  addHeading(msg) {
+    let new_span = document.createElement('span');
+    console.assert(new_span instanceof Element)
+    new_span.setAttribute('slot', this.search_result_container_map.heading);
+    new_span.innerText = msg;
+    const result = this.search_result_container.appendChild(new_span);
+    console.assert(result instanceof Element, `${new_span}`)
+  }
+
 }
 
 /**
