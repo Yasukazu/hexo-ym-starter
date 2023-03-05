@@ -46,13 +46,15 @@ class SearchOutput {
    * @param { {url: string, title: string, content: string} }
    */
   addSearchResult({ url, title, content }) {
+    /** @type {DocumentFragment} */
     const entry_output = document.importNode(this.search_result_entry.content, true);
-    console.assert(entry_output);
+    console.assert(entry_output instanceof DocumentFragment);
     const entry_items = entry_output.querySelectorAll(`[class|='entry']`);
-    console.assert(entry_items)
+    console.assert(entry_items.length > 0)
     for (const entry of entry_items) {
       console.assert(entry instanceof Element);
       const cls = entry.getAttribute('class');
+      console.assert(typeof(cls) === 'string')
       const split = cls.split('-');
       console.assert(split.length > 1);
       const item = split[1];
@@ -78,9 +80,12 @@ class SearchOutput {
           break;
       }
     }
-    const slot_element = entry_output.querySelector(`[class='${this.search_result_entry_map.id}']`);
-    console.assert(slot_element instanceof Element);
-    slot_element.setAttribute('slot', this.search_result_container_map.entries);
+    // const slot_element = entry_output.querySelector(`[class='${this.search_result_entry_map.id}']`);
+    const slot_element = entry_output.children[0];
+    console.assert(slot_element instanceof HTMLElement);
+    debugger;
+    const slot_attribute = slot_element.getAttribute('slot');
+    console.assert(slot_attribute === this.search_result_container_map.entries);
     const result = this.search_result_container.appendChild(entry_output);
     console.assert(result instanceof DocumentFragment, `${entry_output}`)
   }

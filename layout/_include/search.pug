@@ -36,7 +36,7 @@ template(id=search_result_container_map.id)
       slot(name=search_result_container_map.entries)
 
 template(id=search_result_entry_map.id)
-  li(class=search_result_entry_map.id)
+  li(class=search_result_entry_map.id, slot=search_result_container_map.entries)
     a(class=search_result_entry_map.url)
       span(class=search_result_entry_map.title)
     time(class=search_result_entry_map.date)
@@ -52,7 +52,7 @@ script(type="module").
       const template = document.getElementById("#{search_result_container_map.id}");
       console.assert(template instanceof HTMLElement, `no template!`);
       const templateContent = template.content;
-      console.assert(`no template content`);
+      console.assert(templateContent instanceof DocumentFragment, `no template content`);
       const _shadowRoot = this.attachShadow({mode: 'open'});
       console.assert(_shadowRoot, `attach shadow failed!`);
       const cloned = templateContent.cloneNode(true);
