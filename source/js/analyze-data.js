@@ -58,10 +58,10 @@ class ItemMap {
         console.info(`No content in ${item} of ${entry} !`);
       }
     }
-    if (typeof this.map.get('title') === 'undefined') {
+    if (!this.map.has('title')) {
       this.map.set('title', {ii: [], nfkcText: ''});
     }
-    if (typeof this.map.get('content') === 'undefined') {
+    if (!this.map.has('content')) {
       this.map.set('content', {ii: [], nfkcText: ''});
     }
   }
@@ -204,10 +204,7 @@ function exec_search(fetch_data = fetchData(), query, { ignore_case = true, igno
     for (const itemMap of analyzeData(xml, query, { ignore_case, ignore_accents })) {
       const url = itemMap.url;
       const title = itemMap.title;
-      const text = itemMap.content;
-      if (typeof(text) === 'undefined')
-        throw Error('content text is undefined!');
-      const content = mark_text(text, itemMap.ii);
+      const content = itemMap.ii.length > 0 ? mark_text(itemMap.content, itemMap.ii) : itemMap.content;
       search_output.addSearchResult({url, title, content});
     }
     const count = search_output.count;
@@ -224,6 +221,8 @@ function exec_search(fetch_data = fetchData(), query, { ignore_case = true, igno
  * @returns {string}
  */
 function mark_text(text, start_end, mark_start = "<mark>", mark_end = "</mark>") {
+  if (start_end.length < 2)
+    return text;
   const before_mark = text.slice(0, start_end[0]);
   const inside_mark = text.slice(start_end[0], start_end[1]);
   const after_mark = text.slice(start_end[1]);
