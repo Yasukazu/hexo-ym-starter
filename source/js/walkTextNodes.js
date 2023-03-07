@@ -150,12 +150,15 @@ class SearchFilter {
 
   /**
    * @param {string} query 
-   * @param {{ignore_case: boolean, ignore_accents: boolean}} 
+   * @param {{ignore_case: boolean, ignore_accents: boolean, regex: boolean}} 
    */
-  constructor(query, { ignore_case = true, ignore_accents = true }) {
+  constructor(query, { ignore_case = true, ignore_accents = true, regex = false}) {
     this.ignore_case = ignore_case;
     this.ignore_accents = ignore_accents;
-    this._re = RegExp(query, ignore_case ? 'uid' : 'ud');
+    this.regex = regex;
+    this._re = regex ? RegExp(query, ignore_case ? 'uid' : 'ud') : null;
+    this._si = query;
+
     /**
     * @param {string} text 
     * @returns { {ii: Array<number>, nfkcText: string}} // {IndexText}
@@ -181,6 +184,7 @@ class SearchFilter {
         console.assert(text.length, "text became empty after replacing accents!");
         console.assert(text.length == nfkcText.length, "Search text length changed by normalize and replacing accents.")
       }
+      // TODO: _si case
       const _ii = text.match(this._re);
       if (!_ii) {
         return {ii: [], nfkcText};
