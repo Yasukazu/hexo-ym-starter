@@ -157,7 +157,7 @@ class SearchFilter {
     this.ignore_accents = ignore_accents;
     this.regex = regex;
     this._re = regex ? RegExp(query, ignore_case ? 'uid' : 'ud') : null;
-    this._si = query;
+    this._si = regex ? null : query;
 
     /**
     * @param {string} text 
@@ -184,7 +184,8 @@ class SearchFilter {
         console.assert(text.length, "text became empty after replacing accents!");
         console.assert(text.length == nfkcText.length, "Search text length changed by normalize and replacing accents.")
       }
-      // TODO: _si case
+      debugger;
+      if (regex) {
       const _ii = text.match(this._re);
       if (!_ii) {
         return {ii: [], nfkcText};
@@ -192,6 +193,16 @@ class SearchFilter {
       else {
         return {ii: _ii.indices[0], nfkcText};
       }
+    }
+    else {
+      const _i = text.indexOf(this._si);
+      if (_i < 0) {
+        return {ii: [], nfkcText};
+      }
+      else {
+        return {ii: [_i, _i + query.length], nfkcText};
+      }
+    }
     }
   }
 
