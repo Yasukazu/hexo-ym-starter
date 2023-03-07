@@ -184,7 +184,6 @@ class SearchFilter {
         console.assert(text.length, "text became empty after replacing accents!");
         console.assert(text.length == nfkcText.length, "Search text length changed by normalize and replacing accents.")
       }
-      debugger;
       if (regex) {
       const _ii = text.match(this._re);
       if (!_ii) {
@@ -195,7 +194,7 @@ class SearchFilter {
       }
     }
     else {
-      const _i = text.indexOf(this._si);
+      const _i = text.toLowerCase().indexOf(this._si);
       if (_i < 0) {
         return {ii: [], nfkcText};
       }

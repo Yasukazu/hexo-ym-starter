@@ -12,6 +12,9 @@ datalist#tags
  each item in search_tags
   option(value=item) 
 
+
+
+
 div(id=search_input.id)
   label(for=search_input.text) Enter search text:
     input(id=search_input.text, type="search", name=search_input.text, size='20', minlength='1', maxlength='255', placeholder='keyword')
@@ -21,7 +24,24 @@ div(id=search_input.id)
   label(for=search_input.ignore_accents) Ignore accents
   input(id=search_input.regex, type="checkbox" )
   label(for=search_input.regex) Regular expression
-  button(id=search_input.button, type='button', onClick="return search()") Search
+  button(id=search_input.button, type='button') Search
+
+script(type="module").
+  import {exec_search, fetchData} from "/js/analyze-data.js";
+  function search() {
+    const search_result_container_map = {id: "search-result-container", heading: "heading", entries: "entries"};
+    const search_result_entry_map = {id: "search-result-entry", url: 'entry-url', title: 'entry-title', date: 'entry-date', content: 'entry-content'};
+  const search_input = {id: "search_input_id", text: "search_input-text", ignore_case: 'search_input-ignore-case', ignore_accents: 'search_input-ignore-accents', regex: 'search_input-regex', button: 'search_input-button'};
+    exec_search(fetchData(), search_result_container_map, search_result_entry_map, search_input);
+    return false;
+  }
+
+  const button = document.getElementById("#{search_input.button}");
+  console.assert(button instanceof Element, 'No button!');
+  button.addEventListener('click', (event) => {
+    search();
+    event.preventDefault();
+  });
 
 -
   const search_result_container_map = {id: "search-result-container", heading: "heading", entries: "entries"}
@@ -51,11 +71,8 @@ template(id=search_result_entry_map.id)
     img.thumbnail
 
 
+
 script(type="module").
-  import {exec_search, fetchData, search} from "/js/analyze-data.js";
-
-
-
   customElements.define(
   "#{search_result_container_map.id}",
   class extends HTMLElement {

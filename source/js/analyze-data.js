@@ -1,7 +1,7 @@
 //@ts-check
 import {SearchFilter} from "./walkTextNodes.js";
 import { SearchOutput } from "./search-output.js";
-export {search, exec_search, analyzeData, fetchData};
+export {exec_search, analyzeData, fetchData};
 
 
 class ItemMap {
@@ -191,14 +191,6 @@ function* analyzeData(document, query_str, {ignore_case = true, ignore_accents =
   }
 }
 
-function search() {
-  const search_result_container_map = {id: "search-result-container", heading: "heading", entries: "entries"};
-  const search_result_entry_map = {id: "search-result-entry", url: 'entry-url', title: 'entry-title', date: 'entry-date', content: 'entry-content'};
-const search_input = {id: "search_input_id", text: "search_input-text", ignore_case: 'search_input-ignore-case', ignore_accents: 'search_input-ignore-accents', regex: 'search_input-regex', button: 'search_input-button'};
-  debugger;
-  exec_search(fetchData(), search_result_container_map, search_result_entry_map, search_input);
-  return false;
-}
 
 /**
  * @param {Promise} fetch_data
