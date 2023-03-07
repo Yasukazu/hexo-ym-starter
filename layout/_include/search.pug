@@ -6,13 +6,13 @@
   const search_input_id = "search_input"
   const regex_id = "regex"
   const search_tags = ['Hexo', 'JavaScript', 'HTML', 'Pag']
-  const search_input = {id: "#{search_input_id}", text: "#{search_input_id}-text", ignore_case: '#{search_input_id}-ignore-case', ignore_accents: '#{search_input_id}-ignore-accents', regex: '#{search_input_id}-regex', button: '#{search_input_id}-button'}
+  const search_input = {id: "search_input_id", text: "search_input-text", ignore_case: 'search_input-ignore-case', ignore_accents: 'search_input-ignore-accents', regex: 'search_input-regex', button: 'search_input-button'}
 
 datalist#tags
  each item in search_tags
   option(value=item) 
 
-form(id=search_input.id, onsubmit='return search()')
+div(id=search_input.id)
   label(for=search_input.text) Enter search text:
     input(id=search_input.text, type="search", name=search_input.text, size='20', minlength='1', maxlength='255', placeholder='keyword')
   input(id=search_input.ignore_case, type="checkbox", checked)
@@ -21,7 +21,7 @@ form(id=search_input.id, onsubmit='return search()')
   label(for=search_input.ignore_accents) Ignore accents
   input(id=search_input.regex, type="checkbox" )
   label(for=search_input.regex) Regular expression
-  button(id=search_input.button, type='button', onClick="search()") Search
+  button(id=search_input.button, type='button', onClick="return search()") Search
 
 -
   const search_result_container_map = {id: "search-result-container", heading: "heading", entries: "entries"}
@@ -32,6 +32,8 @@ form(id=search_input.id, onsubmit='return search()')
   const search_entries_name = "search-entries"
   const search_result_entry_map = {id: "search-result-entry", url: 'entry-url', title: 'entry-title', date: 'entry-date', content: 'entry-content'}
   const search_result_entry_id = search_result_entry_map.id;
+
+
 
 template(id=search_result_container_map.id)
   div(id=search_result_container_map.id)
@@ -48,7 +50,12 @@ template(id=search_result_entry_map.id)
     p(class=search_result_entry_map.content, data-length=200)
     img.thumbnail
 
+
 script(type="module").
+  import {exec_search, fetchData, search} from "/js/analyze-data.js";
+
+
+
   customElements.define(
   "#{search_result_container_map.id}",
   class extends HTMLElement {
@@ -72,14 +79,4 @@ script(type="module").
 
 #{search_result_container_map.id}(id=search_result_container_map.id, style="color: blue;")
 
-script(type="module").
-  import {exec_search, fetchData} from "/js/analyze-data.js";
 
-  function search() {
-    const search_result_container_map = {id: "search-result-container", heading: "heading", entries: "entries"};
-    const search_result_entry_map = {id: "search-result-entry", url: 'entry-url', title: 'entry-title', date: 'entry-date', content: 'entry-content'}
-    const search_input = {id: "#{search_input_id}", text: "#{search_input_id}-text", ignore_case: '#{search_input_id}-ignore-case', ignore_accents: '#{search_input_id}-ignore-accents', regex: '#{search_input_id}-regex', button: '#{search_input_id}-button'};
-    debugger;
-    exec_search(fetchData(), input.value, search_result_container_map, search_result_entry_map, search_input);
-    return false;
-  }
