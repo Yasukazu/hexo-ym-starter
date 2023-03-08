@@ -67,11 +67,10 @@ script(type="module").
   );
 ```
 
-#### カスタムタグ記述
+#### カスタムタグ利用 // Usage of the custom tag (Pug)
 ```pug
 #{search_result_container_map.id}(id=search_result_container_map.id, style="color: blue;")
-  span(slot=search_result_container_map.heading, class=search_result_container_map.heading) Slotted search result:
-  li(slot=search_result_container_map.entries, class=search_result_container_map.entries) entry 1
+  span(slot=search_result_container_map.heading, class=search_result_container_map.heading) Search result:
 ```
 
 ### JavaScriptによるカスタムタグへのエントリー注入 // Entry injection by JavaScript into the custom tag
@@ -91,9 +90,10 @@ The entry function for these templates is **exec_search** in a script file `them
 - Keep matching slot name and slot attribute of custom tag template and entry template respectively.
 - Content cut-off length is adjustable with `data-length` attribute(default=300) of an element with 'content' class.
 
-### Search ignores Unicode Combining Characters(diacritical marks like [tilde: ñ], Japanese _dakuten_ and _handakuten_) and case-insensitive by default(User can switch both with checkboxes).
+### 検索はデフォルトで発音区別符号付きの文字(キャレット:[âîûêôÂÎÛÊÔ]、ティルダ:[ñÑ]などの発音区別符号が付いたアルファベットや日本語のひらがな/カタカナの濁点・半濁点)を付かないものと同一視し、大文字([A-Z])と小文字([a-z])も区別しない(利用者が切り替え可能)。正規表現も利用可能。 // Search, by default, ignores Unicode Combining Characters(characters with diacritical marks like _circumflex_:[âîûêôÂÎÛÊÔ], _tilde_:[ ñÑ], Japanese _dakuten_ and _handakuten_) and also case-insensitive (User can switch both with checkboxes). Reguler expression is also avilable.
 
-Using **normalize('NFKD' | 'NFKC')** method of JavaScript
+ - `theme/ym-start/source/js/walkTextNodes.js#SearchFilter.filter` 
+ - Using **normalize('NFKD' | 'NFKC')** method of JavaScript
 
 ## Acknoledgement
 The search result part JavaScript code derives from following original repository:
