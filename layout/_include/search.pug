@@ -5,15 +5,11 @@
   const ignore_accents_id = "ignore-accents"
   const search_input_id = "search_input"
   const regex_id = "regex"
-  const search_tags = ['Hexo', 'JavaScript', 'HTML', 'Pag']
   const search_input = {id: "search_input_id", text: "search_input-text", ignore_case: 'search_input-ignore-case', ignore_accents: 'search_input-ignore-accents', regex: 'search_input-regex', button: 'search_input-button'}
 
-datalist#tags
- each item in search_tags
+datalist(id=theme.search_tags_id)
+ each item in theme.search_tags
   option(value=item) 
-
-
-
 
 div(id=search_input.id)
   label(for=search_input.text) Enter search text:
