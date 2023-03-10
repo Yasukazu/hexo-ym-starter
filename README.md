@@ -77,13 +77,13 @@ script(type="module").
 
 ```js
 // Import node from the entry template
-const entry_node_element = document.getElementById(entry_template_id);
+const entry_node_element = document.querySelector(`template.entry`);
 const entry_node = document.importNode(entry_node_element.content, true);
 // ... set innerHTML or attributes of the imported node
 // set slot attribute to the imported node
 entry_node.children[0].setAttribute('slot', 'entry'); // the custom tag is defined using template with 'entry' name attributed slot. <slot name="entry">
 // inject(as appendChild) the entry node into the custom element
-document.querySelector(custom_tag).appendChild(entry_node);
+document.querySelector(`custom-tag`).appendChild(entry_node);
 ```
 
 The entry function for these templates is **exec_search** in a script file `themes/ym-start/source/js/analyze-data.js`.
