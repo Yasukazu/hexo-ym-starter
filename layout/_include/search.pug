@@ -5,19 +5,16 @@
   const ignore_accents_id = "ignore-accents"
   const search_input_id = "search_input"
   const regex_id = "regex"
-  const search_tags = ['Hexo', 'JavaScript', 'HTML', 'Pag']
   const search_input = {id: "search_input_id", text: "search_input-text", ignore_case: 'search_input-ignore-case', ignore_accents: 'search_input-ignore-accents', regex: 'search_input-regex', button: 'search_input-button'}
+  const search_tags_id= 'search-tags'
 
-datalist#tags
- each item in search_tags
-  option(value=item) 
-
-
-
+datalist(id=search_tags_id)
+ each stag in theme.search_tags
+  option(value=stag) 
 
 div(id=search_input.id)
   label(for=search_input.text) Enter search text:
-    input(id=search_input.text, type="search", name=search_input.text, size='20', minlength='1', maxlength='255', placeholder='keyword')
+    input(id=search_input.text, type="search", name=search_input.text, size='20', minlength='1', maxlength='255', placeholder='keyword', list=search_tags_id)
   input(id=search_input.ignore_case, type="checkbox", checked)
   label(for=search_input.ignore_case) Ignore case
   input(id=search_input.ignore_accents, type="checkbox" checked)

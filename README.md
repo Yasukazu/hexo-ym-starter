@@ -20,7 +20,13 @@ This is my branch of the template for making a theme of Hexo with Pug.
 ## サイト内全文検索 // In-site full-text search
 `themes/ym-start/layout/_include/search.pug` contains templates for search result output.
 
-## 検索用HTMLテンプレート // HTML templates for search
+### 利用者が定義できる検索用タグリスト // user-defineable tag list for search
+`themes/ym-start/_config.yml`
+```yaml
+search_tags: ['Tomato', 'Carrot']
+```
+
+### 検索用HTMLテンプレート // HTML templates for search
 - 二つのテンプレートを使います // It uses 2 templates
 
 ### Pugによるテンプレートの例 // An example of templates by Pug
