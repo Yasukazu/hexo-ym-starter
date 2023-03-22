@@ -3,8 +3,6 @@ export { SearchOutput, getFirstNChars, startsFromDate };
 class SearchOutput {
     /**
      * check container element of #search
-     * @param {{id: string, heading: string, entries: string}}search_result_container_map
-     * @param {{id: string, title: string, date: string, content: string}} search_result_entry_map
      */
     constructor(search_result_container_map, search_result_entry_map) {
         this.search_result_container_map = search_result_container_map;
@@ -34,9 +32,9 @@ class SearchOutput {
         this.added_count = 0;
     }
     /**
-     * @param { {url: string, title: string, content: string, ii: Array<number>} }
+     *
      */
-    addSearchResult({ url, title, content, ii }) {
+    addSearchResult(info) {
         /** @type {DocumentFragment} */
         const entry_output = document.importNode(this.search_result_entry.content, true);
         console.assert(entry_output instanceof DocumentFragment);
@@ -51,10 +49,10 @@ class SearchOutput {
             const item = split[1];
             switch (item) {
                 case 'url':
-                    entry.setAttribute('href', url);
+                    entry.setAttribute('href', info.url);
                     break;
                 case 'title':
-                    entry.innerHTML = title;
+                    entry.innerHTML = info.title;
                     break;
                 case 'content':
                     let length = 300;
@@ -66,11 +64,11 @@ class SearchOutput {
                         else
                             console.warn('data-length is invalid.');
                     }
-                    content = getFirstNChars(content, length);
-                    entry.innerHTML = mark_text(content, ii);
+                    info.content = getFirstNChars(info.content, length);
+                    entry.innerHTML = mark_text(info.content, info.ii);
                     break;
                 case 'date':
-                    const url_date = getDate(url);
+                    const url_date = getDate(info.url);
                     if (url_date)
                         entry.innerHTML = url_date;
                     else
@@ -81,7 +79,6 @@ class SearchOutput {
                     break;
             }
         }
-        // const slot_element = entry_output.querySelector(`[class='${this.search_result_entry_map.id}']`);
         const slot_element = entry_output.children[0];
         console.assert(slot_element instanceof HTMLElement);
         const slot_attribute = slot_element.getAttribute('slot');
@@ -96,7 +93,6 @@ class SearchOutput {
     get count() { return this.added_count; }
     /**
      * Add new heading
-     * @param {string} msg
      */
     addHeading(msg) {
         let new_span = document.createElement('span');
@@ -109,9 +105,6 @@ class SearchOutput {
 }
 /**
  *
- * @param {string} src
- * @param {Number} n
- * @returns {string}
  */
 function getFirstNChars(src, n, trailing = '...') {
     const array = Array.from(src); // every code point
@@ -127,7 +120,7 @@ function getFirstNChars(src, n, trailing = '...') {
             lc = c;
         }
         out += c;
-        if (++i >= n) {
+        if ((++i) >= n) {
             on_break = true;
             break;
         }
@@ -136,7 +129,7 @@ function getFirstNChars(src, n, trailing = '...') {
 }
 /**
  * Check url string represents a valid date
- * @param {string} url
+ * Returns empty string if not valid
  * @returns {string}
  */
 function startsFromDate(url) {
@@ -167,12 +160,11 @@ function getDate(url) {
 }
 /**
  *
- * @param {string} text
- * @param {Array<number>} start_end
  * @returns {string}
  */
 function mark_text(text, start_end, mark_start = "<mark>", mark_end = "</mark>") {
-    if (start_end.length < 2)
+    console.assert(start_end.length >= 2, `${start_end.length} must be 2 or larger!`);
+    if (start_end[1] - start_end[0] <= 1)
         return text;
     const before_mark = text.slice(0, start_end[0]);
     const inside_mark = text.slice(start_end[0], start_end[1]);

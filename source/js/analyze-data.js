@@ -111,7 +111,8 @@ function* analyzeData(document, query_str, { ignore_case = true, ignore_accents 
     const entries = document.querySelectorAll('entry');
     if (!entries)
         throw Error(`No entries!`);
-    for (const entry of entries) {
+    for (let i = 0; i < entries.length; ++i) {
+        const entry = entries[i];
         const itemMap = new ItemMap(entry, query_str, { ignore_case, ignore_accents, regex });
         if (itemMap.isValid) {
             yield itemMap;
@@ -159,8 +160,6 @@ function exec_search(fetch_data = fetchData(), search_result_container_map, sear
 const fetch_path = '/search.xml';
 /**
  *
- * @param {string} fetchUrl
- * @returns {Promise}
  */
 function fetchData(fetchUrl = fetch_path) {
     return new Promise(resolve => {
