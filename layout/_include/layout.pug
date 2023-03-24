@@ -5,10 +5,6 @@ html(lang=config.language)
     include ./header
     include ./search
     block content
-    block pagination
-
-    include ./footer
-    include ./scripts
     div(id="disqus_thread")
     script.
              const page_path = "#{page.path}";
@@ -19,9 +15,13 @@ html(lang=config.language)
              };
              (function() {
                var d = document, s = d.createElement('script');
-               s.src = 'https://yasukazu.disqus.com/embed.js';
+               s.src = 'https://yasukazu-1.disqus.com/embed.js';
                s.setAttribute('data-timestamp', +new Date());
-               (d.head || d.body).appendChild(s);
+               (d.body).appendChild(s);
              })();
     noscript.
             - Please enable JavaScript to view the #[a(href="https://disqus.com/?ref_noscript",rel="nofollow") comments powered by Disqus.]
+    block pagination
+
+    include ./footer
+    include ./scripts
