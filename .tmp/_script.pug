@@ -1,0 +1,22 @@
+    script.
+        var disqus_config = function () {
+        this.page.url = config.url + '/' + page.path; // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = '/' + page.path; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+        };
+        (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        
+        s.src = 'https://yasukazu.disqus.com/embed.js';
+        
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+        })();
+
+<!-- begin wwww.htmlcommentbox.com -->
+
+script(id="hcb").
+  if(!window.hcb_user){hcb_user={};} (function(){var s=document.createElement("script"), l=hcb_user.PAGE || (""+window.location).replace(/'/g,"%27"), h="https://www.htmlcommentbox.com";s.setAttribute("type","text/javascript");s.setAttribute("src", h+"/jread?page="+encodeURIComponent(l).replace("+","%2B")+"&mod=%241%24wq1rdBcg%24s9g5bsSGMnul4G%2F97EJKw%2F"+"&opts=16798&num=10&ts=1679640880063");if (typeof s!="undefined") document.getElementsByTagName("head")[0].appendChild(s);})();
+    div(id="HCB_comment_box")
+      a(href="http://www.htmlcommentbox.com") Comment Form
+      - is loading comments...
+    link(rel="stylesheet" type="text/css" href="https://www.htmlcommentbox.com/static/skins/bootstrap/twitter-bootstrap.css?v=0")

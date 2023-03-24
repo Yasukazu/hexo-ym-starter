@@ -9,3 +9,19 @@ html(lang=config.language)
 
     include ./footer
     include ./scripts
+    div(id="disqus_thread")
+      script.
+             const page_path = "#{page.path}";
+             const page_url = "#{config.url}/" + page_path";
+             var disqus_config = function () {
+               this.page.url = page_url;
+               this.page.identifier = '/' + page_path;
+             };
+             (function() {
+               var d = document, s = d.createElement('script');
+               s.src = 'https://yasukazu.disqus.com/embed.js';
+               s.setAttribute('data-timestamp', +new Date());
+               (d.head || d.body).appendChild(s);
+             })();
+      noscript.
+            - Please enable JavaScript to view the #[a(href="https://disqus.com/?ref_noscript",rel="nofollow") comments powered by Disqus.]
