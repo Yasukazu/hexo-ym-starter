@@ -10,7 +10,7 @@ html(lang=config.language)
     include ./footer
     include ./scripts
     div(id="disqus_thread")
-      script.
+    script.
              const page_path = "#{page.path}";
              const page_url = "#{config.url}/" + page_path";
              var disqus_config = function () {
@@ -23,5 +23,5 @@ html(lang=config.language)
                s.setAttribute('data-timestamp', +new Date());
                (d.head || d.body).appendChild(s);
              })();
-      noscript.
+    noscript.
             - Please enable JavaScript to view the #[a(href="https://disqus.com/?ref_noscript",rel="nofollow") comments powered by Disqus.]
