@@ -5,7 +5,9 @@ html(lang=config.language)
     include ./header
     include ./search
     block content
-
+    .commentbox
+    script(src="https://unpkg.com/commentbox.io/dist/commentBox.min.js") 
+    script commentBox('5764111233187840-proj')
     block pagination
 
     include ./footer
